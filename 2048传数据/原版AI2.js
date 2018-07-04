@@ -39,10 +39,10 @@ AI.prototype.eval = function() {
 
   // 单调性(Monotonicity) 2-4-8-16-32
   // 平滑性(Smoothness) 2-2-2-2-2-2-2-2
-  var smoothWeight = 1.0,
+  var smoothWeight = 0.1,
       mono2Weight  = 1.0,
       emptyWeight  = 2.7,
-      maxWeight    = 2.0;
+      maxWeight    = 1.0;
 
       // var smoothWeight = 0.1,
       // //monoWeight   = 0.0,
@@ -52,7 +52,7 @@ AI.prototype.eval = function() {
       // maxWeight    = 1.0;
 
   //自己添加的权重参数
-  var oppositeSidesWeight=0.2;
+  var oppositeSidesWeight=0.1;
 
 
 
@@ -979,59 +979,67 @@ Grid.prototype.isWin = function() {
 
 
 
-minSearchTime=66;
+minSearchTime=82;
 while(1){
-//---------------------无限循环开始-----------------------------
-  grids=recogniseGrid()
-  // gridsLog(grids)
-  // log(grids)
-  // 转换完毕,添加AI,Tile,Grid
-  newGrid=new Grid(4)
-  for(let i=0;i<grids.length;i++){
-    let newTile= new Tile(grids[i][0],grids[i][1])
-    newGrid.insertTile(newTile)
+
+  try{
+
+    while(1){
+    //---------------------无限循环开始-----------------------------
+      grids=recogniseGrid()
+      // gridsLog(grids)
+      // log(grids)
+      // 转换完毕,添加AI,Tile,Grid
+      newGrid=new Grid(4)
+      for(let i=0;i<grids.length;i++){
+        let newTile= new Tile(grids[i][0],grids[i][1])
+        newGrid.insertTile(newTile)
+      }
+      // log(newGrid.toString())
+      newAI=new AI(newGrid)
+      bestDirectionNum=newAI.getBest().move
+      bestDirection=newAI.translate(bestDirectionNum)
+      // log("bestDirection=",bestDirection)
+      滑动(bestDirection)
+      sleep(25)
+      // exit()
+
+
+      // tile=[{x:x,y:y},value]  || null
+      // function Tile(position, value) {
+      //   this.x                = position.x;
+      //   this.y                = position.y;
+      //   this.value            = value || 2;
+
+      //   this.previousPosition = null;
+      //   this.mergedFrom       = null; // Tracks tiles that merged together
+      // }
+
+
+      // Grid.prototype.insertTile = function (tile) {
+      //   this.cells[tile.x][tile.y] = tile;
+      // };
+
+      // 更新格子信息
+      // newGrid = new Grid(4);
+      // for(var item of grids){
+      //   if(item){
+      //     let tile=new Tile({x:item.x,y:item.y},item.num)
+      //     newGrid.insertTile(tile)
+      //   }
+      // }
+      ////log("\n插入识别后的格子=\n",newGrid.toString())
+      // exit()
+
+      // ai = new AI(newGrid);
+        //  00 10 20 30
+        //  01 11 21 31
+        //  02 12 22 32
+        //  03 13 23 33
+    }
+  }catch(e){
+    log(e)
   }
-  // log(newGrid.toString())
-  newAI=new AI(newGrid)
-  bestDirectionNum=newAI.getBest().move
-  bestDirection=newAI.translate(bestDirectionNum)
-  // log("bestDirection=",bestDirection)
-  滑动(bestDirection)
-  sleep(33)
-  // exit()
-
-
-  // tile=[{x:x,y:y},value]  || null
-  // function Tile(position, value) {
-  //   this.x                = position.x;
-  //   this.y                = position.y;
-  //   this.value            = value || 2;
-
-  //   this.previousPosition = null;
-  //   this.mergedFrom       = null; // Tracks tiles that merged together
-  // }
-
-
-  // Grid.prototype.insertTile = function (tile) {
-  //   this.cells[tile.x][tile.y] = tile;
-  // };
-
-  // 更新格子信息
-  // newGrid = new Grid(4);
-  // for(var item of grids){
-  //   if(item){
-  //     let tile=new Tile({x:item.x,y:item.y},item.num)
-  //     newGrid.insertTile(tile)
-  //   }
-  // }
-  ////log("\n插入识别后的格子=\n",newGrid.toString())
-  // exit()
-
-  // ai = new AI(newGrid);
-    //  00 10 20 30
-    //  01 11 21 31
-    //  02 12 22 32
-    //  03 13 23 33
 }
 
 
