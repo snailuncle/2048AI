@@ -5,18 +5,7 @@ if(!requestScreenCapture()){
     exit();
 }
 
-//2048是两个人玩的游戏
-//其中一个人负责往格子上放置数字(2或者4),
-//另一个人负责滑动(上下左右)
-//负责滑动的我们成为boy,放置数字的那个我们成为girl
-
-//boy想要通过滑动合成2048,
-//girl想要放置数字,干扰boy,让他不能合成2048
-
-//girl说,你赢了,我就输了
-//boy说,我变强,才能当你更强的肉盾.
-
-//首先我们构建格子,经典的4X4大小
+minSearchTime=55
 
 function Grid(size) {
   this.size = size;
@@ -52,22 +41,8 @@ function Tile(position, value) {
 function Boy() {
 }
 
-//----------------男上---女下----------------------------------------------
 function Girl() {
 }
-newGrid = new Grid(4);
-newTile=new Tile({x:0,y:0},2)
-newBoy=new Boy()
-newGirl=new Girl()
-//log("newGrid=",newGrid)
-//log("newTile=",newTile)
-//log("newBoy=",newBoy)
-//log("newGirl=",newGirl)
-// exit()
-// 有了两个玩家,有了作战区域,我们来战斗吧
-
-//首先我们要定义玩家,格子,方块的行为
-
 
 
 // ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■■ ■ ■ ■ ■ ■ ■ ■ ■ ■  ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■
@@ -112,6 +87,499 @@ for (var x=0; x<4; x++) {
     Grid.prototype.indexes[x].push( {x:x, y:y} );
   }
 }
+//格子的序号检测
+Grid.prototype.indexesInspect = function () {
+  var cells = [];
+  this.eachCell(function (x, y, tile) {
+    cells.push( {x:x, y:y,tile:tile} );
+  });
+ //log("96行Grid.prototype.indexesInspect cells=\n",cells)
+  exit()
+  return cells;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Grid.prototype.weight32 = function () {
+  var gene = [];
+  this.eachCell(function (x, y, tile) {
+    if(tile){
+      gene.push( {x:x, y:y,num:tile.value} );
+    }
+  });
+  var compareObj = function (prop) {
+    return function (obj1, obj2) {
+        var val1 = obj1[prop];
+        var val2 = obj2[prop];
+        if (!isNaN(Number(val1)) && !isNaN(Number(val2))) {
+            val1 = Number(val1);
+            val2 = Number(val2);
+        }
+        if (val1 > val2) {
+            return -1;
+        } else if (val1 < val2) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+  }
+  gene.sort(compareObj("num"))
+  let result
+  let number=32
+  if(
+    gene[0] && gene[1] &&
+    gene[0].num==number &&
+    gene[1].num==number &&
+      ((
+        (Math.abs(gene[0].x-gene[1].x))==1 &&
+        (gene[1].y-gene[0].y)==0
+      )
+      ||
+      (
+        (Math.abs(gene[0].y-gene[1].y))==1 &&
+        (gene[1].x-gene[0].x)==0
+      ))
+    ){
+    result= true
+  }else{
+    result= false
+  }
+  return result;
+};
+Grid.prototype.weight64 = function () {
+  var gene = [];
+  this.eachCell(function (x, y, tile) {
+    if(tile){
+      gene.push( {x:x, y:y,num:tile.value} );
+    }
+  });
+  var compareObj = function (prop) {
+    return function (obj1, obj2) {
+        var val1 = obj1[prop];
+        var val2 = obj2[prop];
+        if (!isNaN(Number(val1)) && !isNaN(Number(val2))) {
+            val1 = Number(val1);
+            val2 = Number(val2);
+        }
+        if (val1 > val2) {
+            return -1;
+        } else if (val1 < val2) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+  }
+  gene.sort(compareObj("num"))
+  let result
+  let number=64
+  if(
+    gene[0] && gene[1] &&
+    gene[0].num==number &&
+    gene[1].num==number &&
+      ((
+        (Math.abs(gene[0].x-gene[1].x))==1 &&
+        (gene[1].y-gene[0].y)==0
+      )
+      ||
+      (
+        (Math.abs(gene[0].y-gene[1].y))==1 &&
+        (gene[1].x-gene[0].x)==0
+      ))
+    ){
+    result= true
+  }else{
+    result= false
+  }
+  return result;
+};
+Grid.prototype.weight128 = function () {
+  var gene = [];
+  this.eachCell(function (x, y, tile) {
+    if(tile){
+      gene.push( {x:x, y:y,num:tile.value} );
+    }
+  });
+  var compareObj = function (prop) {
+    return function (obj1, obj2) {
+        var val1 = obj1[prop];
+        var val2 = obj2[prop];
+        if (!isNaN(Number(val1)) && !isNaN(Number(val2))) {
+            val1 = Number(val1);
+            val2 = Number(val2);
+        }
+        if (val1 > val2) {
+            return -1;
+        } else if (val1 < val2) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+  }
+  gene.sort(compareObj("num"))
+  let result
+  let number=128
+  if(
+    gene[0] && gene[1] &&
+    gene[0].num==number &&
+    gene[1].num==number &&
+      ((
+        (Math.abs(gene[0].x-gene[1].x))==1 &&
+        (gene[1].y-gene[0].y)==0
+      )
+      ||
+      (
+        (Math.abs(gene[0].y-gene[1].y))==1 &&
+        (gene[1].x-gene[0].x)==0
+      ))
+    ){
+    result= true
+  }else{
+    result= false
+  }
+  return result;
+};
+Grid.prototype.weight256 = function () {
+  var gene = [];
+  this.eachCell(function (x, y, tile) {
+    if(tile){
+      gene.push( {x:x, y:y,num:tile.value} );
+    }
+  });
+  var compareObj = function (prop) {
+    return function (obj1, obj2) {
+        var val1 = obj1[prop];
+        var val2 = obj2[prop];
+        if (!isNaN(Number(val1)) && !isNaN(Number(val2))) {
+            val1 = Number(val1);
+            val2 = Number(val2);
+        }
+        if (val1 > val2) {
+            return -1;
+        } else if (val1 < val2) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+  }
+  gene.sort(compareObj("num"))
+  let result
+  let number=256
+  if(
+    gene[0] && gene[1] &&
+    gene[0].num==number &&
+    gene[1].num==number &&
+      ((
+        (Math.abs(gene[0].x-gene[1].x))==1 &&
+        (gene[1].y-gene[0].y)==0
+      )
+      ||
+      (
+        (Math.abs(gene[0].y-gene[1].y))==1 &&
+        (gene[1].x-gene[0].x)==0
+      ))
+    ){
+    result= true
+  }else{
+    result= false
+  }
+  return result;
+};
+Grid.prototype.weight512 = function () {
+  var gene = [];
+  this.eachCell(function (x, y, tile) {
+    if(tile){
+      gene.push( {x:x, y:y,num:tile.value} );
+    }
+  });
+  var compareObj = function (prop) {
+    return function (obj1, obj2) {
+        var val1 = obj1[prop];
+        var val2 = obj2[prop];
+        if (!isNaN(Number(val1)) && !isNaN(Number(val2))) {
+            val1 = Number(val1);
+            val2 = Number(val2);
+        }
+        if (val1 > val2) {
+            return -1;
+        } else if (val1 < val2) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+  }
+  gene.sort(compareObj("num"))
+  let result
+  let number=512
+  if(
+    gene[0] && gene[1] &&
+    gene[0].num==number &&
+    gene[1].num==number &&
+      ((
+        (Math.abs(gene[0].x-gene[1].x))==1 &&
+        (gene[1].y-gene[0].y)==0
+      )
+      ||
+      (
+        (Math.abs(gene[0].y-gene[1].y))==1 &&
+        (gene[1].x-gene[0].x)==0
+      ))
+    ){
+    result= true
+  }else{
+    result= false
+  }
+  return result;
+};
+Grid.prototype.weight1024 = function () {
+  var gene = [];
+  this.eachCell(function (x, y, tile) {
+    if(tile){
+      gene.push( {x:x, y:y,num:tile.value} );
+    }
+  });
+  var compareObj = function (prop) {
+    return function (obj1, obj2) {
+        var val1 = obj1[prop];
+        var val2 = obj2[prop];
+        if (!isNaN(Number(val1)) && !isNaN(Number(val2))) {
+            val1 = Number(val1);
+            val2 = Number(val2);
+        }
+        if (val1 > val2) {
+            return -1;
+        } else if (val1 < val2) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+  }
+  gene.sort(compareObj("num"))
+  let result
+  let number=1024
+  if(
+    gene[0] && gene[1] &&
+    gene[0].num==number &&
+    gene[1].num==number &&
+      ((
+        (Math.abs(gene[0].x-gene[1].x))==1 &&
+        (gene[1].y-gene[0].y)==0
+      )
+      ||
+      (
+        (Math.abs(gene[0].y-gene[1].y))==1 &&
+        (gene[1].x-gene[0].x)==0
+      ))
+    ){
+    result= true
+  }else{
+    result= false
+  }
+  return result;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//第二第三第四个数字是不是在第一个数字的两侧
+//是返回true惩罚
+
+Grid.prototype.isSecondAndThirdOnBothSidesOfTheLargeNumber = function () {
+  var gene = [];
+  this.eachCell(function (x, y, tile) {
+    if(tile){
+      gene.push( {x:x, y:y,num:tile.value} );
+    }
+  });
+
+  var compareObj = function (prop) {
+    return function (obj1, obj2) {
+        var val1 = obj1[prop];
+        var val2 = obj2[prop];
+        if (!isNaN(Number(val1)) && !isNaN(Number(val2))) {
+            val1 = Number(val1);
+            val2 = Number(val2);
+        }
+        if (val1 > val2) {
+            return -1;
+        } else if (val1 < val2) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+  }
+  gene.sort(compareObj("num"))
+    //  00 10 20 30
+    //  01 11 21 31
+    //  02 12 22 32
+    //  03 13 23 33
+    // [ { x: 1, y: 2, num: 1024 },
+    //   { x: 2, y: 2, num: 512 },
+    //   { x: 1, y: 3, num: 256 },
+    //   { x: 0, y: 1, num: 128 },
+    //   { x: 3, y: 1, num: 128 },
+    //   { x: 0, y: 3, num: 64 },
+    //   { x: 1, y: 0, num: 32 },
+    //   { x: 1, y: 1, num: 32 },
+    //   { x: 2, y: 3, num: 32 },
+    //   { x: 2, y: 0, num: 16 },
+    //   { x: 2, y: 1, num: 16 },
+    //   { x: 3, y: 2, num: 16 },
+    //   { x: 0, y: 0, num: 8 },
+    //   { x: 0, y: 2, num: 8 },
+    //   { x: 3, y: 0, num: 8 },
+    //   { x: 3, y: 3, num: 8 } ]
+  let result
+  if(gene[1] && gene[2] && gene[3] && (( (gene[3].x-gene[0].x)>=0 &&  (gene[1].x-gene[0].x)>=0 && (gene[2].x-gene[0].x)>=0) || ( (gene[3].x-gene[0].x)<=0 &&   (gene[1].x-gene[0].x)<=0 && (gene[2].x-gene[0].x)<=0))){
+    result= false
+   //log("老二和老三在同一侧")
+  }else{
+
+    result= true
+   //log("老二和老三不在同一侧")
+
+  }
+
+
+ //log(result)
+  // exit()
+  return result;
+};
+
+
+
+
+
+// [ { x: 0,
+//   y: 0,
+//   tile: { x: 0, y: 0, value: 8, previousPosition: null, mergedFrom: null } },
+// { x: 0,
+//   y: 1,
+//   tile:
+//    { x: 0,
+//      y: 1,
+//      value: 128,
+//      previousPosition: null,
+//      mergedFrom: null } },
+// { x: 0,
+//   y: 2,
+//   tile: { x: 0, y: 2, value: 8, previousPosition: null, mergedFrom: null } },
+// { x: 0,
+//   y: 3,
+//   tile: { x: 0, y: 3, value: 64, previousPosition: null, mergedFrom: null } },
+// { x: 1,
+//   y: 0,
+//   tile: { x: 1, y: 0, value: 32, previousPosition: null, mergedFrom: null } },
+// { x: 1,
+//   y: 1,
+//   tile: { x: 1, y: 1, value: 32, previousPosition: null, mergedFrom: null } },
+// { x: 1,
+//   y: 2,
+//   tile:
+//    { x: 1,
+//      y: 2,
+//      value: 1024,
+//      previousPosition: null,
+//      mergedFrom: null } },
+// { x: 1,
+//   y: 3,
+//   tile:
+//    { x: 1,
+//      y: 3,
+//      value: 256,
+//      previousPosition: null,
+//      mergedFrom: null } },
+// { x: 2,
+//   y: 0,
+//   tile: { x: 2, y: 0, value: 16, previousPosition: null, mergedFrom: null } },
+// { x: 2,
+//   y: 1,
+//   tile: { x: 2, y: 1, value: 16, previousPosition: null, mergedFrom: null } },
+// { x: 2,
+//   y: 2,
+//   tile:
+//    { x: 2,
+//      y: 2,
+//      value: 512,
+//      previousPosition: null,
+//      mergedFrom: null } },
+// { x: 2,
+//   y: 3,
+//   tile: { x: 2, y: 3, value: 32, previousPosition: null, mergedFrom: null } },
+// { x: 3,
+//   y: 0,
+//   tile: { x: 3, y: 0, value: 8, previousPosition: null, mergedFrom: null } },
+// { x: 3,
+//   y: 1,
+//   tile:
+//    { x: 3,
+//      y: 1,
+//      value: 128,
+//      previousPosition: null,
+//      mergedFrom: null } },
+// { x: 3,
+//   y: 2,
+//   tile: { x: 3, y: 2, value: 16, previousPosition: null, mergedFrom: null } },
+// { x: 3,
+//   y: 3,
+//   tile: { x: 3, y: 3, value: 8, previousPosition: null, mergedFrom: null } } ]
+
+
+
+
 
 
 
@@ -147,10 +615,7 @@ Grid.prototype.randomAvailableCell = function () {
 //插入方块
 // Inserts a tile at its position
 Grid.prototype.insertTile = function (tile) {
-  if(tile){
-
-    this.cells[tile.x][tile.y] = tile;
-  }
+  this.cells[tile.x][tile.y] = tile;
 };
 //移除方块
 Grid.prototype.removeTile = function (tile) {
@@ -640,9 +1105,57 @@ Grid.prototype.maxValue = function() {
       }
     }
   }
-
   return Math.log(max) / Math.log(2);
 }
+//格子中最大的数字
+Grid.prototype.isMaxValueInTheCorner = function() {
+  var gene = [];
+  this.eachCell(function (x, y, tile) {
+    if(tile){
+      gene.push( {x:x, y:y,num:tile.value} );
+    }
+  });
+  var compareObj = function (prop) {
+    return function (obj1, obj2) {
+        var val1 = obj1[prop];
+        var val2 = obj2[prop];
+        if (!isNaN(Number(val1)) && !isNaN(Number(val2))) {
+            val1 = Number(val1);
+            val2 = Number(val2);
+        }
+        if (val1 > val2) {
+            return -1;
+        } else if (val1 < val2) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+  }
+  gene.sort(compareObj("num"))
+    //  00 10 20 30
+    //  01 11 21 31
+    //  02 12 22 32
+    //  03 13 23 33
+
+  let xy=gene[0].x.toString()+gene[0].y.toString()
+
+// 左上角 00
+// 左下角 03
+// 右上角 30
+// 右下角 33
+  if("00,03,30,33".indexOf(xy)==-1){
+    return false
+  }else{
+    return true
+  }
+}
+
+
+
+
+
+
 
 
 //赢了没
@@ -690,16 +1203,137 @@ AI.prototype.eval = function() {
   var smoothWeight = 0.1,
       //monoWeight   = 0.0,
       //islandWeight = 0.0,
-      mono2Weight  = 2.0,
+      mono2Weight  = 1.0,
       emptyWeight  = 2.7,
-      maxWeight    = 1.0;
+      maxWeight    = 1.0,
+      //异侧
+      oppositeSides=0.2;
+      maxPositionWeight=0.2;
+      ;
 
-  return this.grid.smoothness() * smoothWeight
+      let k=2;
+      weight32Weight=0.1*k,
+      weight64Weight=0.2*k,
+      weight128Weight=0.3*k,
+      weight256Weight=0.4*k,
+      weight512Weight=0.5*k,
+      weight1024Weight=0.6*k;
+
+      ;
+
+
+  let result=
+       this.grid.smoothness() * smoothWeight
        //+ this.grid.monotonicity() * monoWeight
        //- this.grid.islands() * islandWeight
        + this.grid.monotonicity2() * mono2Weight
        + Math.log(emptyCells) * emptyWeight
        + this.grid.maxValue() * maxWeight;
+  // "最大数不在角落那么分值减半"
+
+  if(this.grid.isMaxValueInTheCorner()){
+    if(result>=0){
+      result=result+maxPositionWeight*result
+    }else{
+      result=result-result*maxPositionWeight
+    }
+
+  }else{
+    //分值减半
+    if(result>=0){
+      result=result-maxPositionWeight*result
+    }else{
+      result=result+result*maxPositionWeight
+    }
+  }
+
+
+
+
+  // "32加分"
+
+  if(this.grid.weight32()){
+    if(result>=0){
+      result=result+weight32Weight*result
+    }else{
+      result=result-result*weight32Weight
+    }
+
+  }
+  if(this.grid.weight64()){
+    if(result>=0){
+      result=result+weight64Weight*result
+    }else{
+      result=result-result*weight64Weight
+    }
+
+  }
+  // "128加分"
+
+  if(this.grid.weight128()){
+    if(result>=0){
+      result=result+weight128Weight*result
+    }else{
+      result=result-result*weight128Weight
+    }
+
+  }
+  // "128512
+
+  if(this.grid.weight256()){
+    if(result>=0){
+      result=result+weight256Weight*result
+    }else{
+      result=result-result*weight256Weight
+    }
+
+  }
+  // "128加分"
+
+  if(this.grid.weight512()){
+    if(result>=0){
+      result=result+weight512Weight*result
+    }else{
+      result=result-result*weight512Weight
+    }
+
+  }
+  if(this.grid.weight1024()){
+    if(result>=0){
+      result=result+weight1024Weight*result
+    }else{
+      result=result-result*weight1024Weight
+    }
+
+  }
+
+
+
+
+  // "异侧减分"
+
+  if(this.grid.isSecondAndThirdOnBothSidesOfTheLargeNumber()){
+    if(result>=0){
+      result=result-oppositeSides*result
+    }else{
+      result=result+result*oppositeSides
+    }
+
+  }else{
+    //在同侧加分
+    if(result>=0){
+      result=result+maxPositionWeight*result
+    }else{
+      result=result-result*maxPositionWeight
+    }
+  }
+
+
+
+
+
+
+  return result
 };
 
 
@@ -903,72 +1537,196 @@ AI.prototype.translate = function(move) {
 //      上面是女孩的行为定义
 // ♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀♀
 
-
-
-
-// 步骤1
-//识别并使用Grid的插入方法,插入当前格子的数据
-
-
-firstGridLeftTopCorner={x:34,y:242}
+firstGridLeftTopCorner={x:77,y:647}
 //挨着第一个格子
-rightGrid={x:317,y:242}
-downGrid={x:34,y:522}
+
+rightGrid={x:330,y:647}
+
+downGrid={x:77,y:921}
 
 leftRightDistance=rightGrid.x-firstGridLeftTopCorner.x
 upDownDistance=downGrid.y-firstGridLeftTopCorner.y
 
 lightScreen();
-
-//初始化十六个格子数字都是0
 grids = new Array(16);
-let k=0
-let j=0
-for(var i=0;i<grids.length;i++){
-  if(i==4 || i==8 || i==12){
-    k=0
-  }
-  if(i==4 || i==8 || i==12){
-    j++
-  }
-  let x=firstGridLeftTopCorner.x+k*leftRightDistance
-  let y=firstGridLeftTopCorner.y+j*upDownDistance
-  grids[i] = {num:0,x:x,y:y};
-  k++;
-}
+
+
 NumberColors={
-  2:"#EEE4DA",
-  4:"#EDE0C8",
-  8:"#F2B179",
-  16:"#F59563",
-  32:"#F67C5F",
-  64:"#F65E3B",
-  128:"#EDCF72",
-  256:"#EDCC61",
-  512:"#EDC850",
-  1024:"#EDC53F"
+  8:"#BEC9FF",
+  16:"#7DD7FF",
+  32:"#A6FFE3",
+  64:"#A9FF9D",
+  128:"#FFE682",
+  256:"#FFA942",
+  512:"#D583FF",
+  1024:"#FEFC38"
 }
-minSearchTime=100
+
+
+
+
+while(1){
+
+// 步骤1
+//识别并使用Grid的插入方法,插入当前格子的数据
+
+
+
 //---------------------无限循环开始-----------------------------
-  while(1){
-  sleep(100)
+  // while(1){
+  // sleep(100)
   grids=recogniseGrid()
-  gridsLog()
+ //log(grids)
+  // gridsLog()
+  newGrid = new Grid(4);
   for(var item of grids){
     if(item){
       let tile=new Tile({x:item.x,y:item.y},item.num)
       newGrid.insertTile(tile)
-    }else{
-      newGrid.insertTile(null)
+    }
+    // else{
+    //   newGrid.insertTile(null)
+    // }
+  }
+  ////log("\n插入识别后的格子=\n",newGrid.toString())
+  // exit()
+  ai = new AI(newGrid);
+  // logStars()
+  // ai.grid.indexesInspect()
+  // ai.grid.isSecondAndThirdOnBothSidesOfTheLargeNumber()
+    //  00 10 20 30
+    //  01 11 21 31
+    //  02 12 22 32
+    //  03 13 23 33
+
+  emptyLattice=ai.grid.availableCells().length
+  emptyLattice=ai.grid.availableCells().length
+
+
+  if(emptyLattice>=7){
+   //log("调用下下左")
+    //查找数字最大的位置
+    //下下左滑动
+
+
+
+//格子中最大的数字
+  var compareObj = function (prop) {
+    return function (obj1, obj2) {
+        var val1 = obj1[prop];
+        var val2 = obj2[prop];
+        if (!isNaN(Number(val1)) && !isNaN(Number(val2))) {
+            val1 = Number(val1);
+            val2 = Number(val2);
+        }
+        if (val1 > val2) {
+            return -1;
+        } else if (val1 < val2) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
   }
-  //log("\n插入识别后的格子=\n",newGrid.toString())
-  ai = new AI(newGrid);
-  logStars()
-  aiGetBest=ai.getBest();
-  bestDirection=ai.translate(aiGetBest.move)
-  //log("AI计算出的最佳滑动方向=",bestDirection)
-  switch(bestDirection)
+  let resultWithPositon=[]
+  for(let i=0;i<16;i++){
+    if(grids[i]){
+      resultWithPositon.push(grids[i])
+    }
+  }
+  resultWithPositon.sort(compareObj("num"))
+
+  let xy=resultWithPositon[0].x.toString()+resultWithPositon[0].y.toString()
+  ////log("最大数是",resultWithPositon[0].num,"坐标是",xy)
+
+  // 左上角 00
+  // 左下角 03
+  // 右上角 30
+  // 右下角 33
+  if(xy=="00"){
+   //log("最大数字在左上角")
+    //左上角
+    滑动("up")
+    滑动("up")
+    滑动("left")
+  }else if(xy=="03"){
+   //log("最大数字在左下角")
+
+    //左下角
+    滑动("down")
+    滑动("down")
+    滑动("left")
+  }else if(xy=="30"){
+   //log("最大数字在右上角")
+
+    //右上角
+    滑动("up")
+    滑动("up")
+    滑动("right")
+  }else if(xy=="33"){
+   //log("最大数字在右下角")
+
+    //右下角
+    滑动("down")
+    滑动("down")
+    滑动("right")
+  }else{
+   //log('最大数字不在上下左右四个角')
+  }
+
+  oldGrids=recogniseGrid()
+ //log("oldGrids=",oldGrids)
+ //log("grids=",grids)
+
+  let oldInfo=[]
+  for(let i=0;i<oldGrids.length;i++){
+    if(oldGrids[i] && oldGrids[i].num!=0){
+      oldInfo.push(oldGrids[i].num)
+    }
+  }
+
+  let gridsInfo=[]
+  for(let i=0;i<grids.length;i++){
+    if(grids[i] && grids[i].num!=0){
+      gridsInfo.push(grids[i].num)
+    }
+  }
+
+
+ //log("oldInfo.toString()=",oldInfo.toString())
+ //log("gridsInfo.toString()=",gridsInfo.toString())
+
+  if(oldInfo.toString()==gridsInfo.toString()){
+   //log("下下左,格子没变化,调用一次AI")
+    aiGetBest=ai.getBest();
+    ////log("AI计算出的最佳滑动=",aiGetBest)
+    bestDirection=ai.translate(aiGetBest.move)
+    ////log("AI计算出的最佳滑动方向=",bestDirection)
+    滑动(bestDirection)
+  }else{
+   //log("下下左,格子有变化,不用调取AI")
+  }
+
+
+
+
+  }else{
+   //log("调用AI")
+
+    aiGetBest=ai.getBest();
+    ////log("AI计算出的最佳滑动=",aiGetBest)
+    bestDirection=ai.translate(aiGetBest.move)
+    ////log("AI计算出的最佳滑动方向=",bestDirection)
+    滑动(bestDirection)
+  }
+
+
+  // exit()
+
+}
+
+function 滑动(direction){
+  switch(direction)
   {
     case 'up':
       上滑()
@@ -985,9 +1743,7 @@ minSearchTime=100
     default:
     //log('不存在这个滑动方向maxNum,',scoreResult.direction)
   }
-
 }
-
 
 
 
@@ -1018,6 +1774,21 @@ function logStars(num){
 //-------------------------识别数字函数------------------------------------
 
 function recogniseGrid(){
+  //初始化十六个格子数字都是0
+  let k=0
+  let j=0
+  for(var i=0;i<grids.length;i++){
+    if(i==4 || i==8 || i==12){
+      k=0
+    }
+    if(i==4 || i==8 || i==12){
+      j++
+    }
+    let x=firstGridLeftTopCorner.x+k*leftRightDistance
+    let y=firstGridLeftTopCorner.y+j*upDownDistance
+    grids[i] = {num:0,x:x,y:y};
+    k++;
+  }
   img=captureScreen()
   for(var i=0;i<16;i++){
     let color=images.pixel(img, grids[i].x, grids[i].y)
@@ -1096,20 +1867,27 @@ function unlockingScreen(){
 function 上滑(){
   let duration=10
   let xy=[461,1084,487,512]
-  swipe(xy[0],xy[1],xy[2],xy[3],duration)
+  swipe(xy[0],xy[1],xy[2],xy[3],duration);
+  sleep(6);
 }
 function 下滑(){
   let duration=10
   let xy=[487,512,461,1084]
-  swipe(xy[0],xy[1],xy[2],xy[3],duration)
+  swipe(xy[0],xy[1],xy[2],xy[3],duration);
+  sleep(6);
+
 }
 function 左滑(){
   let duration=10
   let xy=[972,527,109,525]
-  swipe(xy[0],xy[1],xy[2],xy[3],duration)
+  swipe(xy[0],xy[1],xy[2],xy[3],duration);
+  sleep(6);
+
 }
 function 右滑(){
   let duration=10
-  let xy=[109,525,972,527]
-  swipe(xy[0],xy[1],xy[2],xy[3],duration)
+  let xy=[309,525,972,527]
+  swipe(xy[0],xy[1],xy[2],xy[3],duration);
+  sleep(6);
+
 }

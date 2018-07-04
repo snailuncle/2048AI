@@ -87,6 +87,610 @@ for (var x=0; x<4; x++) {
     Grid.prototype.indexes[x].push( {x:x, y:y} );
   }
 }
+//格子的序号检测
+Grid.prototype.indexesInspect = function () {
+  var cells = [];
+  this.eachCell(function (x, y, tile) {
+    cells.push( {x:x, y:y,tile:tile} );
+  });
+ //log("96行Grid.prototype.indexesInspect cells=\n",cells)
+  exit()
+  return cells;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Grid.prototype.coherent = function () {
+  var gene = [];
+  this.eachCell(function (x, y, tile) {
+    if(tile){
+      gene.push( {x:x, y:y,num:tile.value} );
+    }
+  });
+  var compareObj = function (prop) {
+    return function (obj1, obj2) {
+        var val1 = obj1[prop];
+        var val2 = obj2[prop];
+        if (!isNaN(Number(val1)) && !isNaN(Number(val2))) {
+            val1 = Number(val1);
+            val2 = Number(val2);
+        }
+        if (val1 > val2) {
+            return -1;
+        } else if (val1 < val2) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+  }
+  gene.sort(compareObj("num"))
+
+
+  function numTail(first,second){
+    if((first.x==second.x && Math.abs(first.y-second.y)==1) ||
+        (first.y==second.y && Math.abs(first.x-second.x)==1)
+  ){
+    return true
+    }
+    return false
+  }
+
+
+
+
+
+  let result
+  if(
+    gene[0] && gene[1] && gene[2] && numTail(gene[0],gene[1]) && numTail(gene[2],gene[1]) ){
+    //糖葫芦串串
+    result= true
+  }else{
+    result= false
+  }
+  return result;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Grid.prototype.weight32 = function () {
+  var gene = [];
+  this.eachCell(function (x, y, tile) {
+    if(tile){
+      gene.push( {x:x, y:y,num:tile.value} );
+    }
+  });
+  var compareObj = function (prop) {
+    return function (obj1, obj2) {
+        var val1 = obj1[prop];
+        var val2 = obj2[prop];
+        if (!isNaN(Number(val1)) && !isNaN(Number(val2))) {
+            val1 = Number(val1);
+            val2 = Number(val2);
+        }
+        if (val1 > val2) {
+            return -1;
+        } else if (val1 < val2) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+  }
+  gene.sort(compareObj("num"))
+  let result
+  let number=32
+  if(
+    gene[0] && gene[1] &&
+    gene[0].num==number &&
+    gene[1].num==number &&
+      ((
+        (Math.abs(gene[0].x-gene[1].x))==1 &&
+        (gene[1].y-gene[0].y)==0
+      )
+      ||
+      (
+        (Math.abs(gene[0].y-gene[1].y))==1 &&
+        (gene[1].x-gene[0].x)==0
+      ))
+    ){
+    result= true
+  }else{
+    result= false
+  }
+  return result;
+};
+Grid.prototype.weight64 = function () {
+  var gene = [];
+  this.eachCell(function (x, y, tile) {
+    if(tile){
+      gene.push( {x:x, y:y,num:tile.value} );
+    }
+  });
+  var compareObj = function (prop) {
+    return function (obj1, obj2) {
+        var val1 = obj1[prop];
+        var val2 = obj2[prop];
+        if (!isNaN(Number(val1)) && !isNaN(Number(val2))) {
+            val1 = Number(val1);
+            val2 = Number(val2);
+        }
+        if (val1 > val2) {
+            return -1;
+        } else if (val1 < val2) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+  }
+  gene.sort(compareObj("num"))
+  let result
+  let number=64
+  if(
+    gene[0] && gene[1] &&
+    gene[0].num==number &&
+    gene[1].num==number &&
+      ((
+        (Math.abs(gene[0].x-gene[1].x))==1 &&
+        (gene[1].y-gene[0].y)==0
+      )
+      ||
+      (
+        (Math.abs(gene[0].y-gene[1].y))==1 &&
+        (gene[1].x-gene[0].x)==0
+      ))
+    ){
+    result= true
+  }else{
+    result= false
+  }
+  return result;
+};
+Grid.prototype.weight128 = function () {
+  var gene = [];
+  this.eachCell(function (x, y, tile) {
+    if(tile){
+      gene.push( {x:x, y:y,num:tile.value} );
+    }
+  });
+  var compareObj = function (prop) {
+    return function (obj1, obj2) {
+        var val1 = obj1[prop];
+        var val2 = obj2[prop];
+        if (!isNaN(Number(val1)) && !isNaN(Number(val2))) {
+            val1 = Number(val1);
+            val2 = Number(val2);
+        }
+        if (val1 > val2) {
+            return -1;
+        } else if (val1 < val2) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+  }
+  gene.sort(compareObj("num"))
+  let result
+  let number=128
+  if(
+    gene[0] && gene[1] &&
+    gene[0].num==number &&
+    gene[1].num==number &&
+      ((
+        (Math.abs(gene[0].x-gene[1].x))==1 &&
+        (gene[1].y-gene[0].y)==0
+      )
+      ||
+      (
+        (Math.abs(gene[0].y-gene[1].y))==1 &&
+        (gene[1].x-gene[0].x)==0
+      ))
+    ){
+    result= true
+  }else{
+    result= false
+  }
+  return result;
+};
+Grid.prototype.weight256 = function () {
+  var gene = [];
+  this.eachCell(function (x, y, tile) {
+    if(tile){
+      gene.push( {x:x, y:y,num:tile.value} );
+    }
+  });
+  var compareObj = function (prop) {
+    return function (obj1, obj2) {
+        var val1 = obj1[prop];
+        var val2 = obj2[prop];
+        if (!isNaN(Number(val1)) && !isNaN(Number(val2))) {
+            val1 = Number(val1);
+            val2 = Number(val2);
+        }
+        if (val1 > val2) {
+            return -1;
+        } else if (val1 < val2) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+  }
+  gene.sort(compareObj("num"))
+  let result
+  let number=256
+  if(
+    gene[0] && gene[1] &&
+    gene[0].num==number &&
+    gene[1].num==number &&
+      ((
+        (Math.abs(gene[0].x-gene[1].x))==1 &&
+        (gene[1].y-gene[0].y)==0
+      )
+      ||
+      (
+        (Math.abs(gene[0].y-gene[1].y))==1 &&
+        (gene[1].x-gene[0].x)==0
+      ))
+    ){
+    result= true
+  }else{
+    result= false
+  }
+  return result;
+};
+Grid.prototype.weight512 = function () {
+  var gene = [];
+  this.eachCell(function (x, y, tile) {
+    if(tile){
+      gene.push( {x:x, y:y,num:tile.value} );
+    }
+  });
+  var compareObj = function (prop) {
+    return function (obj1, obj2) {
+        var val1 = obj1[prop];
+        var val2 = obj2[prop];
+        if (!isNaN(Number(val1)) && !isNaN(Number(val2))) {
+            val1 = Number(val1);
+            val2 = Number(val2);
+        }
+        if (val1 > val2) {
+            return -1;
+        } else if (val1 < val2) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+  }
+  gene.sort(compareObj("num"))
+  let result
+  let number=512
+  if(
+    gene[0] && gene[1] &&
+    gene[0].num==number &&
+    gene[1].num==number &&
+      ((
+        (Math.abs(gene[0].x-gene[1].x))==1 &&
+        (gene[1].y-gene[0].y)==0
+      )
+      ||
+      (
+        (Math.abs(gene[0].y-gene[1].y))==1 &&
+        (gene[1].x-gene[0].x)==0
+      ))
+    ){
+    result= true
+  }else{
+    result= false
+  }
+  return result;
+};
+Grid.prototype.weight1024 = function () {
+  var gene = [];
+  this.eachCell(function (x, y, tile) {
+    if(tile){
+      gene.push( {x:x, y:y,num:tile.value} );
+    }
+  });
+  var compareObj = function (prop) {
+    return function (obj1, obj2) {
+        var val1 = obj1[prop];
+        var val2 = obj2[prop];
+        if (!isNaN(Number(val1)) && !isNaN(Number(val2))) {
+            val1 = Number(val1);
+            val2 = Number(val2);
+        }
+        if (val1 > val2) {
+            return -1;
+        } else if (val1 < val2) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+  }
+  gene.sort(compareObj("num"))
+  let result
+  let number=1024
+  if(
+    gene[0] && gene[1] &&
+    gene[0].num==number &&
+    gene[1].num==number &&
+      ((
+        (Math.abs(gene[0].x-gene[1].x))==1 &&
+        (gene[1].y-gene[0].y)==0
+      )
+      ||
+      (
+        (Math.abs(gene[0].y-gene[1].y))==1 &&
+        (gene[1].x-gene[0].x)==0
+      ))
+    ){
+    result= true
+  }else{
+    result= false
+  }
+  return result;
+};
+
+
+
+
+Grid.prototype.sencondSameThird = function () {
+  var gene = [];
+  this.eachCell(function (x, y, tile) {
+    if(tile){
+      gene.push( {x:x, y:y,num:tile.value} );
+    }
+  });
+  var compareObj = function (prop) {
+    return function (obj1, obj2) {
+        var val1 = obj1[prop];
+        var val2 = obj2[prop];
+        if (!isNaN(Number(val1)) && !isNaN(Number(val2))) {
+            val1 = Number(val1);
+            val2 = Number(val2);
+        }
+        if (val1 > val2) {
+            return -1;
+        } else if (val1 < val2) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+  }
+  gene.sort(compareObj("num"))
+  let result
+  let number=1024
+  if(
+    gene[1] && gene[2] && gene[1].num==gene[2].num
+    ){
+    result= true
+  }else{
+    result= false
+  }
+  return result;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//第二第三第四个数字是不是在第一个数字的两侧
+//是返回true惩罚
+
+Grid.prototype.isSecondAndThirdOnBothSidesOfTheLargeNumber = function () {
+  var gene = [];
+  this.eachCell(function (x, y, tile) {
+    if(tile){
+      gene.push( {x:x, y:y,num:tile.value} );
+    }
+  });
+
+  var compareObj = function (prop) {
+    return function (obj1, obj2) {
+        var val1 = obj1[prop];
+        var val2 = obj2[prop];
+        if (!isNaN(Number(val1)) && !isNaN(Number(val2))) {
+            val1 = Number(val1);
+            val2 = Number(val2);
+        }
+        if (val1 > val2) {
+            return -1;
+        } else if (val1 < val2) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+  }
+  gene.sort(compareObj("num"))
+    //  00 10 20 30
+    //  01 11 21 31
+    //  02 12 22 32
+    //  03 13 23 33
+    // [ { x: 1, y: 2, num: 1024 },
+    //   { x: 2, y: 2, num: 512 },
+    //   { x: 1, y: 3, num: 256 },
+    //   { x: 0, y: 1, num: 128 },
+    //   { x: 3, y: 1, num: 128 },
+    //   { x: 0, y: 3, num: 64 },
+    //   { x: 1, y: 0, num: 32 },
+    //   { x: 1, y: 1, num: 32 },
+    //   { x: 2, y: 3, num: 32 },
+    //   { x: 2, y: 0, num: 16 },
+    //   { x: 2, y: 1, num: 16 },
+    //   { x: 3, y: 2, num: 16 },
+    //   { x: 0, y: 0, num: 8 },
+    //   { x: 0, y: 2, num: 8 },
+    //   { x: 3, y: 0, num: 8 },
+    //   { x: 3, y: 3, num: 8 } ]
+  let result
+  if(gene[1] && gene[2] && gene[3] && (( (gene[3].x-gene[0].x)>=0 &&  (gene[1].x-gene[0].x)>=0 && (gene[2].x-gene[0].x)>=0) || ( (gene[3].x-gene[0].x)<=0 &&   (gene[1].x-gene[0].x)<=0 && (gene[2].x-gene[0].x)<=0))){
+    result= false
+   //log("老二和老三在同一侧")
+  }else{
+
+    result= true
+   //log("老二和老三不在同一侧")
+
+  }
+
+
+ //log(result)
+  // exit()
+  return result;
+};
+
+
+
+
+
+// [ { x: 0,
+//   y: 0,
+//   tile: { x: 0, y: 0, value: 8, previousPosition: null, mergedFrom: null } },
+// { x: 0,
+//   y: 1,
+//   tile:
+//    { x: 0,
+//      y: 1,
+//      value: 128,
+//      previousPosition: null,
+//      mergedFrom: null } },
+// { x: 0,
+//   y: 2,
+//   tile: { x: 0, y: 2, value: 8, previousPosition: null, mergedFrom: null } },
+// { x: 0,
+//   y: 3,
+//   tile: { x: 0, y: 3, value: 64, previousPosition: null, mergedFrom: null } },
+// { x: 1,
+//   y: 0,
+//   tile: { x: 1, y: 0, value: 32, previousPosition: null, mergedFrom: null } },
+// { x: 1,
+//   y: 1,
+//   tile: { x: 1, y: 1, value: 32, previousPosition: null, mergedFrom: null } },
+// { x: 1,
+//   y: 2,
+//   tile:
+//    { x: 1,
+//      y: 2,
+//      value: 1024,
+//      previousPosition: null,
+//      mergedFrom: null } },
+// { x: 1,
+//   y: 3,
+//   tile:
+//    { x: 1,
+//      y: 3,
+//      value: 256,
+//      previousPosition: null,
+//      mergedFrom: null } },
+// { x: 2,
+//   y: 0,
+//   tile: { x: 2, y: 0, value: 16, previousPosition: null, mergedFrom: null } },
+// { x: 2,
+//   y: 1,
+//   tile: { x: 2, y: 1, value: 16, previousPosition: null, mergedFrom: null } },
+// { x: 2,
+//   y: 2,
+//   tile:
+//    { x: 2,
+//      y: 2,
+//      value: 512,
+//      previousPosition: null,
+//      mergedFrom: null } },
+// { x: 2,
+//   y: 3,
+//   tile: { x: 2, y: 3, value: 32, previousPosition: null, mergedFrom: null } },
+// { x: 3,
+//   y: 0,
+//   tile: { x: 3, y: 0, value: 8, previousPosition: null, mergedFrom: null } },
+// { x: 3,
+//   y: 1,
+//   tile:
+//    { x: 3,
+//      y: 1,
+//      value: 128,
+//      previousPosition: null,
+//      mergedFrom: null } },
+// { x: 3,
+//   y: 2,
+//   tile: { x: 3, y: 2, value: 16, previousPosition: null, mergedFrom: null } },
+// { x: 3,
+//   y: 3,
+//   tile: { x: 3, y: 3, value: 8, previousPosition: null, mergedFrom: null } } ]
+
+
+
+
 
 
 
@@ -616,7 +1220,12 @@ Grid.prototype.maxValue = function() {
 }
 //格子中最大的数字
 Grid.prototype.isMaxValueInTheCorner = function() {
-
+  var gene = [];
+  this.eachCell(function (x, y, tile) {
+    if(tile){
+      gene.push( {x:x, y:y,num:tile.value} );
+    }
+  });
   var compareObj = function (prop) {
     return function (obj1, obj2) {
         var val1 = obj1[prop];
@@ -634,16 +1243,13 @@ Grid.prototype.isMaxValueInTheCorner = function() {
         }
     }
   }
-  let resultWithPositon=[]
-  for(let i=0;i<16;i++){
-    if(grids[i]){
-      resultWithPositon.push(grids[i])
-    }
-  }
-  resultWithPositon.sort(compareObj("num"))
+  gene.sort(compareObj("num"))
+    //  00 10 20 30
+    //  01 11 21 31
+    //  02 12 22 32
+    //  03 13 23 33
 
-  let xy=resultWithPositon[0].x.toString()+resultWithPositon[0].y.toString()
-  ////log("最大数是",resultWithPositon[0].num,"坐标是",xy)
+  let xy=gene[0].x.toString()+gene[0].y.toString()
 
 // 左上角 00
 // 左下角 03
@@ -655,6 +1261,12 @@ Grid.prototype.isMaxValueInTheCorner = function() {
     return true
   }
 }
+
+
+
+
+
+
 
 
 //赢了没
@@ -703,9 +1315,25 @@ AI.prototype.eval = function() {
       //monoWeight   = 0.0,
       //islandWeight = 0.0,
       mono2Weight  = 1.0,
-      emptyWeight  = 5.7,
-      maxPositionWeight=0.5,
-      maxWeight    = 1.0;
+      emptyWeight  = 5,
+      maxWeight    = 1.0,
+      //异侧
+      oppositeSidesWeight=0.1;
+      maxPositionWeight=0.1;
+      ;
+
+      let k=3;
+      weight32Weight=0.1*k,
+      weight64Weight=0.2*k,
+      weight128Weight=0.3*k,
+      weight256Weight=0.4*k,
+      weight512Weight=0.5*k,
+      weight1024Weight=0.6*k,
+
+
+      coherentWeight=0.1,
+      sencondSameThirdWeight=0.1;
+      ;
 
 
   let result=
@@ -732,6 +1360,120 @@ AI.prototype.eval = function() {
       result=result+result*maxPositionWeight
     }
   }
+
+
+
+
+  // "32加分"
+
+  if(this.grid.weight32()){
+    if(result>=0){
+      result=result+weight32Weight*result
+    }else{
+      result=result-result*weight32Weight
+    }
+
+  }
+  if(this.grid.weight64()){
+    if(result>=0){
+      result=result+weight64Weight*result
+    }else{
+      result=result-result*weight64Weight
+    }
+
+  }
+  // "128加分"
+
+  if(this.grid.weight128()){
+    if(result>=0){
+      result=result+weight128Weight*result
+    }else{
+      result=result-result*weight128Weight
+    }
+
+  }
+  // "128512
+
+  if(this.grid.weight256()){
+    if(result>=0){
+      result=result+weight256Weight*result
+    }else{
+      result=result-result*weight256Weight
+    }
+
+  }
+  // "128加分"
+
+  if(this.grid.weight512()){
+    if(result>=0){
+      result=result+weight512Weight*result
+    }else{
+      result=result-result*weight512Weight
+    }
+
+  }
+  if(this.grid.weight1024()){
+    if(result>=0){
+      result=result+weight1024Weight*result
+    }else{
+      result=result-result*weight1024Weight
+    }
+
+  }
+
+
+
+
+  // "异侧减分"
+
+  if(this.grid.isSecondAndThirdOnBothSidesOfTheLargeNumber()){
+    if(result>=0){
+      result=result-oppositeSidesWeight*result
+    }else{
+      result=result+result*oppositeSidesWeight
+    }
+
+  }else{
+    //在同侧加分
+    if(result>=0){
+      result=result+oppositeSidesWeight*result
+    }else{
+      result=result-result*oppositeSidesWeight
+    }
+  }
+
+
+
+  // 连贯
+  if(this.grid.coherent()){
+    if(result>=0){
+      result=result-coherentWeight*result
+    }else{
+      result=result+result*coherentWeight
+    }
+
+  }else{
+    //在同侧加分
+    if(result>=0){
+      result=result+coherentWeight*result
+    }else{
+      result=result-result*coherentWeight
+    }
+  }
+
+  // 23一个样子
+  if(this.grid.sencondSameThird()){
+    if(result>=0){
+      result=result-sencondSameThirdWeight*result
+    }else{
+      result=result+result*sencondSameThirdWeight
+    }
+
+  }
+
+
+
+
 
 
   return result
@@ -993,12 +1735,19 @@ while(1){
   // exit()
   ai = new AI(newGrid);
   // logStars()
+  // ai.grid.indexesInspect()
+  // ai.grid.isSecondAndThirdOnBothSidesOfTheLargeNumber()
+    //  00 10 20 30
+    //  01 11 21 31
+    //  02 12 22 32
+    //  03 13 23 33
 
+  emptyLattice=ai.grid.availableCells().length
   emptyLattice=ai.grid.availableCells().length
 
 
   if(emptyLattice>=7){
-    log("调用下下左")
+   //log("调用下下左")
     //查找数字最大的位置
     //下下左滑动
 
@@ -1038,39 +1787,39 @@ while(1){
   // 右上角 30
   // 右下角 33
   if(xy=="00"){
-    log("最大数字在左上角")
+   //log("最大数字在左上角")
     //左上角
     滑动("up")
     滑动("up")
     滑动("left")
   }else if(xy=="03"){
-    log("最大数字在左下角")
+   //log("最大数字在左下角")
 
     //左下角
     滑动("down")
     滑动("down")
     滑动("left")
   }else if(xy=="30"){
-    log("最大数字在右上角")
+   //log("最大数字在右上角")
 
     //右上角
     滑动("up")
     滑动("up")
     滑动("right")
   }else if(xy=="33"){
-    log("最大数字在右下角")
+   //log("最大数字在右下角")
 
     //右下角
     滑动("down")
     滑动("down")
     滑动("right")
   }else{
-    log('最大数字不在上下左右四个角')
+   //log('最大数字不在上下左右四个角')
   }
 
   oldGrids=recogniseGrid()
-  log("oldGrids=",oldGrids)
-  log("grids=",grids)
+ //log("oldGrids=",oldGrids)
+ //log("grids=",grids)
 
   let oldInfo=[]
   for(let i=0;i<oldGrids.length;i++){
@@ -1087,25 +1836,25 @@ while(1){
   }
 
 
-  log("oldInfo.toString()=",oldInfo.toString())
-  log("gridsInfo.toString()=",gridsInfo.toString())
+ //log("oldInfo.toString()=",oldInfo.toString())
+ //log("gridsInfo.toString()=",gridsInfo.toString())
 
   if(oldInfo.toString()==gridsInfo.toString()){
-    log("下下左,格子没变化,调用一次AI")
+   //log("下下左,格子没变化,调用一次AI")
     aiGetBest=ai.getBest();
     ////log("AI计算出的最佳滑动=",aiGetBest)
     bestDirection=ai.translate(aiGetBest.move)
     ////log("AI计算出的最佳滑动方向=",bestDirection)
     滑动(bestDirection)
   }else{
-    log("下下左,格子有变化,不用调取AI")
+   //log("下下左,格子有变化,不用调取AI")
   }
 
 
 
 
   }else{
-    log("调用AI")
+   //log("调用AI")
 
     aiGetBest=ai.getBest();
     ////log("AI计算出的最佳滑动=",aiGetBest)
