@@ -1,3 +1,7 @@
-nums=`123`
+ascu = android.os.SystemClock.uptimeMillis;
 
-log(nums)
+for(let i=0;i<6;i++){
+  log(ascu())
+  sleep(1000)
+}
+
