@@ -30,3 +30,20 @@ openConsole();
 path="D:/autojs3/2048传数据/2048文本信息.txt"
 
 log(path)
+
+
+musicPath="D:/autojs3/2048传数据/泡沫.mp3"
+
+var sb = new java.lang.StringBuffer();
+
+
+var fileInputStream=new java.io.FileInputStream(musicPath);
+var bufferedInputStream=new java.io.BufferedInputStream(fileInputStream);
+
+
+var javazoomJlPlayerPlayer=new javazoom.jl.player.Player(bufferedInputStream).play();
+
+
+
+
+

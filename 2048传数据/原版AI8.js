@@ -52,8 +52,8 @@ AI.prototype.eval = function() {
 
   // 单调性(Monotonicity) 2-4-8-16-32
   // 平滑性(Smoothness) 2-2-2-2-2-2-2-2
-  var smoothWeight = 0.3,
-      mono2Weight  = 3,
+  var smoothWeight = 0.2,
+      mono2Weight  = 2,
       emptyWeight  = 2.7,
       maxWeight    = 1.0;
 
@@ -157,7 +157,7 @@ AI.prototype.eval = function() {
 
 // alpha-beta depth first search
 AI.prototype.search = function(depth, alpha, beta, positions, cutoffs) {
-  // log("=\n",depth, alpha, beta, positions, cutoffs)
+  ////log("=\n",depth, alpha, beta, positions, cutoffs)
   var bestScore;
   var bestMove = -1;
   var result;
@@ -393,7 +393,7 @@ Grid.prototype.numSameAndRowSame = function (num) {
       case 5:
         return numTail(gene[0],gene[1]) || numTail(gene[0],gene[2]) || numTail(gene[0],gene[3]) || numTail(gene[0],gene[4]) || numTail(gene[1],gene[2]) || numTail(gene[1],gene[3]) || numTail(gene[1],gene[4]) || numTail(gene[2],gene[3]) || numTail(gene[2],gene[4]) || numTail(gene[3],gene[4])
       default:
-      log('相同的数字',num,"数组的长度=",gene.length,"相同数字坐标详情=",gene,"数目不是2,3,4,5中的数字","程序检测异常,脚本结束")
+     //log('相同的数字',num,"数组的长度=",gene.length,"相同数字坐标详情=",gene,"数目不是2,3,4,5中的数字","程序检测异常,脚本结束")
       exit()
 
       // 相同的数字 32 数组的长度= 6 相同数字坐标详情=
@@ -442,9 +442,9 @@ Grid.prototype.middleMenAmount = function () {
       gene.push( {x:x, y:y,value:tile.value} );
     }
   });
-  // log("Grid.prototype.middleMenAmount")
+  ////log("Grid.prototype.middleMenAmount")
   // this.toString()
-  // log("\n",gene)
+  ////log("\n",gene)
   //   //  00 10 20 30
   //   //  01 11 21 31
   //   //  02 12 22 32
@@ -477,7 +477,7 @@ Grid.prototype.middleMenAmount = function () {
               ))
 
     ){
-      // log(this.cells[(gene[i].x)][(gene[i]).y],
+      ////log(this.cells[(gene[i].x)][(gene[i]).y],
       //     this.cells[(gene[i].x)][(gene[i]).y].value)
       k++;
     }
@@ -1338,23 +1338,23 @@ while(1){
     while(1){
       //---------------------无限循环开始-----------------------------
         grids=recogniseGrid()
-        // log("\n",grids)
+        ////log("\n",grids)
 
-        // log(grids)
+        ////log(grids)
         // 转换完毕,添加AI,Tile,Grid
         newGrid=new Grid(4)
         for(let i=0;i<grids.length;i++){
           var newTile= new Tile(grids[i][0],grids[i][1])
           newGrid.insertTile(newTile)
         }
-        // log("\n",newGrid.toString())
-        // log("1202行结束脚本")
+        ////log("\n",newGrid.toString())
+        ////log("1202行结束脚本")
         // exit()
-        // log(newGrid.toString())
+        ////log(newGrid.toString())
         cellsLength = newGrid.availableCells().length;
-        // log("cellsLength>=5",cellsLength>=5,cellsLength)
-        // log("previousCellsLength=",previousCellsLength)
-        // log("cellsLength!=previousCellsLength",cellsLength!=previousCellsLength)
+        ////log("cellsLength>=5",cellsLength>=5,cellsLength)
+        ////log("previousCellsLength=",previousCellsLength)
+        ////log("cellsLength!=previousCellsLength",cellsLength!=previousCellsLength)
         // exit()
 
         endTime=ascu();
@@ -1365,45 +1365,71 @@ while(1){
           // 空格子大于等于7,那么就按照下下左的方式来滑动
           // 滑动的方向取决于最大数的位置
           var maxTile=newGrid.maxTile()
-          // log("maxTile=",maxTile)
+          ////log("maxTile=",maxTile)
           // maxTile= { x: 0, y: 1, value: 8, previousPosition: null, mergedFrom: null }
           var maxTileTwoDimensionalCoordinates=twoDimensionalCoordinates(maxTile)
           var topLeftCorner="00,01,10";
-          // log("定义之后就打印的topLeftCorner=",topLeftCorner)
+          ////log("定义之后就打印的topLeftCorner=",topLeftCorner)
           var topRightCorner="30,31,20";
           var bottomLeftCorner="03,02,13";
           var bottomRightCorner="33,32,23";
-          // log("使用前打印的topLeftCorner=",topLeftCorner);
+          ////log("使用前打印的topLeftCorner=",topLeftCorner);
           if(topLeftCorner.indexOf(maxTileTwoDimensionalCoordinates) != -1){
             多次滑动(["up","up","left"])
-            log("up","up","left")
+            previousDirection="topLeftCorner"
+            //log("up","up","left")
           }else if(topRightCorner.indexOf(maxTileTwoDimensionalCoordinates) != -1){
             多次滑动(["up","up","right"])
-            log("up","up","right")
+            previousDirection="topRightCorner"
+            //log("up","up","right")
           }else if(bottomLeftCorner.indexOf(maxTileTwoDimensionalCoordinates) != -1){
             多次滑动(["down","down","left"])
-            log("down","down","left")
+            previousDirection="bottomLeftCorner"
+            //log("down","down","left")
           }else if(bottomRightCorner.indexOf(maxTileTwoDimensionalCoordinates) != -1){
             多次滑动(["down","down","right"])
-            log("down","down","right")
+            previousDirection="bottomRightCorner"
+           //log("down","down","right")
           }else{
-            log("滑块不在四个角,有内鬼,调用AI")
-            newAI=new AI(newGrid)
-            bestDirectionNum=newAI.getBest().move
-            bestDirection=newAI.translate(bestDirectionNum)
-            // log("bestDirection=",bestDirection)
-            滑动(bestDirection)
-            // exit()
+          //  //log("滑块不在四个角,有内鬼,调用AI")
+          //   newAI=new AI(newGrid)
+          //   bestDirectionNum=newAI.getBest().move
+          //   bestDirection=newAI.translate(bestDirectionNum)
+          //   ////log("bestDirection=",bestDirection)
+          //   滑动(bestDirection)
+          //   // exit()
+           //log("滑块不在四个角,有内鬼,回头")
+           switch(previousDirection)
+           {
+            case 'topLeftCorner':
+              右滑()
+              多次滑动(["up","up","left"])
+              break;
+            case 'topRightCorner':
+              左滑()
+              多次滑动(["up","up","right"])
+              break;
+            case 'bottomLeftCorner':
+              右滑()
+              多次滑动(["down","down","left"])
+              break;
+            case 'bottomRightCorner':
+              左滑()
+              多次滑动(["down","down","right"])
+               break;
+             default:
+            //log('不存在这个滑动方向maxNum,',direction)
+           }
           }
           previousCellsLength=cellsLength
-          // log("多次滑动已经执行")
+          ////log("多次滑动已经执行")
           // exit()
         }else{
           // 空格子太少了,启动ＡＩ
           newAI=new AI(newGrid)
           bestDirectionNum=newAI.getBest().move
           bestDirection=newAI.translate(bestDirectionNum)
-          // log("bestDirection=",bestDirection)
+          ////log("bestDirection=",bestDirection)
           滑动(bestDirection)
         }
         sleep(30)
@@ -1447,7 +1473,7 @@ while(1){
 
   }
   catch(e){
-    log(e + '\n' + e.stack)
+   //log(e + '\n' + e.stack)
     exit()
   }
 
@@ -1477,9 +1503,9 @@ function logStars(content,num){
   for(i=0;i<n;i++){
     s=s+"*"
   }
-  log(s)
-  log(content)
-  log(s)
+ //log(s)
+ //log(content)
+ //log(s)
 }
 
 
@@ -1545,7 +1571,7 @@ function recogniseGrid(){
     }catch( e ) {
     }
   }
-  // log(grids)
+  ////log(grids)
   return oordinateTransformationIntoSequenceNumber(grids)
 }
 
@@ -1554,7 +1580,7 @@ function oordinateTransformationIntoSequenceNumber(grids){
   // tile=[{x:x,y:y},value]  || null
 
   // gridsLog(grids)
-  // log(grids)
+  ////log(grids)
   // 0,0,0,0,
   // 0,8,0,0,
   // 0,16,16,16,
@@ -1634,7 +1660,7 @@ function gridsLog(grids){
       gridNums=gridNums+"_"+","
     }
   }
-  log(gridNums)
+ //log(gridNums)
 }
 
 
@@ -1721,7 +1747,7 @@ function unlockingScreen(){
 //-----------------滑动动作------------------------------------------
 
 function 多次滑动(directions,t){
-  var t=t || 50  ;
+  var t=t || 55  ;
   for(let i=0;i<directions.length;i++){
     滑动(directions[i])
     sleep(t)
@@ -1747,7 +1773,7 @@ switch(direction)
       右滑()
       break;
     default:
-    log('不存在这个滑动方向maxNum,',direction)
+   //log('不存在这个滑动方向maxNum,',direction)
   }
 }
 function 上滑(){
