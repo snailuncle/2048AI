@@ -29,193 +29,189 @@ NumberColors={
 //      下面是AI的功能区
 // AI AI AI AI AI AI AI AI AI AI AI AI AI AI AI AI AI AI AI AI AI AI AI AI
 
-function AI(grid) {
-  this.grid = grid;
-}
-
-// static evaluation function
-AI.prototype.eval = function() {
-  var emptyCells = this.grid.availableCells().length;
-
-  // 单调性(Monotonicity) 2-4-8-16-32
-  // 平滑性(Smoothness) 2-2-2-2-2-2-2-2
-  var smoothWeight = 0.1,
-      mono2Weight  = 1.0,
-      emptyWeight  = 2.7,
-      maxWeight    = 1.0;
-
-      // var smoothWeight = 0.1,
-      // //monoWeight   = 0.0,
-      // //islandWeight = 0.0,
-      // mono2Weight  = 1.0,
-      // emptyWeight  = 2.7,
-      // maxWeight    = 1.0;
-
-  //自己添加的权重参数
-  var oppositeSidesWeight=0.1;
 
 
+function moveName(move) {
+  return {
+     0: 'up',
+     1: 'right',
+     2: 'down',
+     3: 'left'
+   }[move];
+ }
 
-  let result
+ var	global_max_score;
+ var global_max_score_moves;
 
-  result=this.grid.smoothness() * smoothWeight
-       //+ this.grid.monotonicity() * monoWeight
-       //- this.grid.islands() * islandWeight
-       + this.grid.monotonicity2() * mono2Weight
-       + Math.log(emptyCells) * emptyWeight
-       + this.grid.maxValue() * maxWeight;
+ function getBestMove(grid, runs, debug) {
+     var bestScore = 0;
+     var bestMove = -1;
 
+     for (var i=0;i<4;i++) {
+       console.log("getBestMove(grid, runs, debug)的参数=",grid, runs, debug)
+       console.log("multiRandomRun开始")
+       var res = multiRandomRun(grid, i, runs);
+       console.log("multiRandomRun结束")
+       var score = res.score;
 
+       if (score >= bestScore) {
+         bestScore = score;
+         bestMove = i;
+         bestAvgMoves = res.avg_moves;
+       }
 
-  // "异侧减分"
-  if(this.grid.isSecondAndThirdOppositeSideOfTheLargeNumber()){
-    if(result>=0){
-      result=result-result*oppositeSidesWeight
-    }else{
-      result=result+result*oppositeSidesWeight
-    }
-  }else{
-    //"同侧加分"
-    if(result>=0){
-      result=result+result*oppositeSidesWeight
-    }else{
-      result=result-result*oppositeSidesWeight
-    }
-  }
+       if (debug) {
+         console.log('Move ' + moveName(i) + ": Extra score - " + score);
+       }
+     }
+     if(!grid.movesAvailable()) console.log('bug2');
+     // assert move found
+     if (bestMove == -1) {
+       console.log('ERROR...');
+       errorGrid = grid.clone();
+     }
+
+     console.log('Move ' + moveName(bestMove) + ": Extra score - " + bestScore + " Avg number of moves " + bestAvgMoves);
+
+     return {move: bestMove, score: bestScore};
+ }
 
 
 
+ function multiRandomRun(grid, move, runs) {
+   console.log(" multiRandomRun(grid, move, runs)的参数是", grid, move, runs)
+   var total = 0.0;
+   var min = 1000000;
+   var max = 0;
+   var total_moves = 0;
 
-  return result
-};
+   for (var i=0 ; i < runs ; i++) {
+    var beginTime = +new Date();
+    var res = randomRun(grid, move);
+    var endTime = +new Date();
+    console.log("排序用时共计"+(endTime-beginTime)+"ms");
 
-// alpha-beta depth first search
-AI.prototype.search = function(depth, alpha, beta, positions, cutoffs) {
-  var bestScore;
-  var bestMove = -1;
-  var result;
 
-  // the maxing player
-  if (this.grid.playerTurn) {
-    bestScore = alpha;
-    for (var direction in [0, 1, 2, 3]) {
-      var newGrid = this.grid.clone();
-      if (newGrid.move(direction).moved) {
-        positions++;
-        if (newGrid.isWin()) {
-          return { move: direction, score: 10000, positions: positions, cutoffs: cutoffs };
-        }
-        var newAI = new AI(newGrid);
+    console.log(res)
+     console.log(i,"  randomRun(grid, move)的参数是\n", grid.toString(), move)
+     var s = res.score;
+     if (s == -1) return -1;
 
-        if (depth == 0) {
-          result = { move: direction, score: newAI.eval() };
-        } else {
-          result = newAI.search(depth-1, bestScore, beta, positions, cutoffs);
-          if (result.score > 9900) { // win
-            result.score--; // to slightly penalize higher depth from win
-          }
-          positions = result.positions;
-          cutoffs = result.cutoffs;
-        }
+     total += s;
+     total_moves += res.moves;
+     if (s < min) min = s;
+     if (s > max) max = s;
+   }
 
-        if (result.score > bestScore) {
-          bestScore = result.score;
-          bestMove = direction;
-        }
-        if (bestScore > beta) {
-          cutoffs++
-          return { move: bestMove, score: beta, positions: positions, cutoffs: cutoffs };
-        }
-      }
-    }
-  }
+   var avg = total / runs;
+   var avg_moves = total_moves / runs;
 
-  else { // computer's turn, we'll do heavy pruning to keep the branching factor low
-    bestScore = beta;
+ //	return max;
+ //	return min;
+ //	return avg+max;
+   return {score: avg, avg_moves:avg_moves};
+ }
 
-    // try a 2 and 4 in each cell and measure how annoying it is
-    // with metrics from eval
-    var candidates = [];
-    var cells = this.grid.availableCells();
-    var scores = {8: []};
-    for (var value in scores) {
-      for (var i in cells) {
-        scores[value].push(null);
-        var cell = cells[i];
-        var tile = new Tile(cell, parseInt(value, 10));
-        this.grid.insertTile(tile);
-        scores[value][i] = -this.grid.smoothness() + this.grid.islands();
-        this.grid.removeTile(cell);
-      }
-    }
+ function randomRun(grid, move) {
+   log("randomRun(grid, move)的参数是",grid, move)
+  var beginTime = +new Date();
 
-    // now just pick out the most annoying moves
-    var maxScore = Math.max(Math.max.apply(null, scores[8]));
-    for (var value in scores) { // 2 and 4
-      for (var i=0; i<scores[value].length; i++) {
-        if (scores[value][i] == maxScore) {
-          candidates.push( { position: cells[i], value: parseInt(value, 10) } );
-        }
-      }
-    }
 
-    // search on each candidate
-    for (var i=0; i<candidates.length; i++) {
-      var position = candidates[i].position;
-      var value = candidates[i].value;
-      var newGrid = this.grid.clone();
-      var tile = new Tile(position, value);
-      newGrid.insertTile(tile);
-      newGrid.playerTurn = true;
-      positions++;
-      newAI = new AI(newGrid);
-      result = newAI.search(depth, alpha, bestScore, positions, cutoffs);
-      positions = result.positions;
-      cutoffs = result.cutoffs;
 
-      if (result.score < bestScore) {
-        bestScore = result.score;
-      }
-      if (bestScore < alpha) {
-        cutoffs++;
-        return { move: null, score: alpha, positions: positions, cutoffs: cutoffs };
-      }
-    }
-  }
+   var g = grid.clone();
+   var endTime1 = +new Date();
+   console.log("克隆一个格子花费的时间="+(endTime1-beginTime)+"ms");
 
-  return { move: bestMove, score: bestScore, positions: positions, cutoffs: cutoffs };
-}
 
-// performs a search and returns the best move
-AI.prototype.getBest = function() {
-  return this.iterativeDeep();
-}
 
-// performs iterative deepening over the alpha-beta search
-AI.prototype.iterativeDeep = function() {
-  var start = (new Date()).getTime();
-  var depth = 0;
-  var best;
-  do {
-    var newBest = this.search(depth, -10000, 10000, 0 ,0);
-    if (newBest.move == -1) {
-      break;
-    } else {
-      best = newBest;
-    }
-    depth++;
-  } while ( (new Date()).getTime() - start < minSearchTime);
-  return best
-}
+   var score = 0;
 
-AI.prototype.translate = function(move) {
- return {
-    0: 'up',
-    1: 'right',
-    2: 'down',
-    3: 'left'
-  }[move];
-}
+   var beginTime2 = +new Date();
+   var res = moveAndAddRandomTiles(g, move);
+   var endTime2 = +new Date();
+   console.log("执行一次moveAndAddRandomTiles的时间是="+(endTime2-beginTime2)+"ms");
+
+
+
+
+   if (!res.moved) {
+     return -1; // can't start
+   }
+
+
+
+   var beginTime3 = +new Date();
+
+   sss=!g.movesAvailable()
+   log(sss)
+
+
+   var endTime3 = +new Date();
+   console.log("执行一次sss的时间是="+(endTime3-beginTime3)+"ms");
+
+
+
+   score += res.score;
+
+   // run til we can't
+   var moves=1;
+   while (true) {
+
+
+
+
+
+     if (!g.movesAvailable()) break;
+
+
+
+
+     var beginTime3 = +new Date();
+     
+     var res = g.move(Math.floor(Math.random() * 4));
+
+
+
+
+     if (!res.moved) continue;
+
+     score += res.score;
+     g.addRandomTile();
+     moves++;
+
+
+     var endTime3 = +new Date();
+     console.log("执行一次循环的时间是="+(endTime3-beginTime3)+"ms");
+
+
+
+
+
+   }
+   // grid done.
+
+
+
+
+   var endTime = +new Date();
+   console.log("执行一次randomRun的时间="+(endTime-beginTime)+"ms");
+   exit()
+   return {score:score, moves:moves};
+ }
+
+ function moveAndAddRandomTiles(grid, direction) {
+   var res = grid.move(direction);
+   if (res.moved) grid.addRandomTile();
+   return res;
+ }
+
+ // performs a search and returns the best move
+ function AI_getBest(grid, debug) {
+   var runs = document.getElementById('run-count').value;
+     return getBestMove(grid, runs, debug);
+ }
+
+
 
 
 
@@ -232,7 +228,7 @@ AI.prototype.translate = function(move) {
 function Tile(position, value) {
   this.x                = position.x;
   this.y                = position.y;
-  this.value            = value || 8;
+  this.value            = value || 2;
 
   this.previousPosition = null;
   this.mergedFrom       = null; // Tracks tiles that merged together
@@ -255,6 +251,7 @@ Tile.prototype.clone = function() {
 }
 
 
+
 // ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■
 //      上面是方块的功能区
 // ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■
@@ -267,107 +264,6 @@ Tile.prototype.clone = function() {
 
 
 
-
-
-//第二第三第四个数字是不是在第一个数字的两侧
-//是返回true惩罚
-
-Grid.prototype.isSecondAndThirdOppositeSideOfTheLargeNumber = function () {
-  var gene = [];
-  this.eachCell(function (x, y, tile) {
-    if(tile){
-      gene.push( {x:x, y:y,num:tile.value} );
-    }
-  });
-
-  var compareObj = function (prop) {
-    return function (obj1, obj2) {
-        var val1 = obj1[prop];
-        var val2 = obj2[prop];
-        if (!isNaN(Number(val1)) && !isNaN(Number(val2))) {
-            val1 = Number(val1);
-            val2 = Number(val2);
-        }
-        if (val1 > val2) {
-            return -1;
-        } else if (val1 < val2) {
-            return 1;
-        } else {
-            return 0;
-        }
-    }
-  }
-  gene.sort(compareObj("num"))
-    //  00 10 20 30
-    //  01 11 21 31
-    //  02 12 22 32
-    //  03 13 23 33
-
-  let result
-  if(
-    gene[1] && gene[2] && gene[3] &&
-     (
-
-      ( (gene[3].x-gene[0].x)>=0 &&
-      (gene[1].x-gene[0].x)>=0 &&
-      (gene[2].x-gene[0].x)>=0) ||
-
-
-      ( (gene[3].x-gene[0].x)<=0 &&
-      (gene[1].x-gene[0].x)<=0 &&
-      (gene[2].x-gene[0].x)<=0)||
-
-
-      ( (gene[3].y-gene[0].y)<=0 &&
-      (gene[1].y-gene[0].y)<=0 &&
-      (gene[2].y-gene[0].y)<=0)||
-
-
-      ( (gene[3].y-gene[0].y)<=0 &&
-      (gene[1].y-gene[0].y)<=0 &&
-      (gene[2].y-gene[0].y)<=0)
-
-    )
-    )
-
-  {
-    result= false
-   //log("老二和老三在同一侧")
-  }
-  else{
-    result= true
-   //log("老二和老三不在同一侧")
-
-  }
-  return result;
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//-------------------上面是自己定义的权重函数---------------------
 function Grid(size) {
   this.size = size;
   this.startTiles   = 2;
@@ -400,12 +296,32 @@ Grid.prototype.build = function () {
 
 
 // Find the first available random position
+// Note: Optimized by Ronen
 Grid.prototype.randomAvailableCell = function () {
-  var cells = this.availableCells();
-
-  if (cells.length) {
-    return cells[Math.floor(Math.random() * cells.length)];
+  var count = 0;
+  for (var x = 0; x < this.size; x++) {
+    for (var y = 0; y < this.size; y++) {
+      if (!this.cells[x][y]) {
+		count++;
+	  }
+    }
   }
+  if (count==0) return null; // shouldn't happen
+
+  var choice = Math.floor(Math.random() * count);
+  count = 0;
+  for (var x = 0; x < this.size; x++) {
+    for (var y = 0; y < this.size; y++) {
+	  if (this.cells[x][y]) continue;
+
+	  if (count == choice) return {x:x, y:y};
+
+	  count++;
+    }
+  }
+
+  console.log("should not be here");
+
 };
 
 Grid.prototype.availableCells = function () {
@@ -432,9 +348,17 @@ Grid.prototype.eachCell = function (callback) {
 };
 
 // Check if there are any cells available
+// Note: Optimized by Ronen
 Grid.prototype.cellsAvailable = function () {
-  return !!this.availableCells().length;
+  for (var x = 0; x < this.size; x++) {
+    for (var y = 0; y < this.size; y++) {
+      if (!this.cells[x][y]) return true;
+    }
+  }
+  return false;
 };
+
+
 
 // Check if the specified cell is taken
 Grid.prototype.cellAvailable = function (cell) {
@@ -490,7 +414,7 @@ Grid.prototype.addStartTiles = function () {
 // Adds a tile in a random position
 Grid.prototype.addRandomTile = function () {
   if (this.cellsAvailable()) {
-    var value = 8;
+    var value = Math.random() < 0.9 ? 2 : 4;
     //var value = Math.random() < 0.9 ? 256 : 512;
     var tile = new Tile(this.randomAvailableCell(), value);
 
@@ -531,6 +455,7 @@ Grid.prototype.getVector = function (direction) {
 
 // Move tiles on the grid in the specified direction
 // returns true if move was successful
+// Note: Optimized by Ronen
 Grid.prototype.move = function (direction) {
   // 0: up, 1: right, 2:down, 3: left
   var self = this;
@@ -547,8 +472,11 @@ Grid.prototype.move = function (direction) {
   this.prepareTiles();
 
   // Traverse the grid in the right direction and move tiles
-  traversals.x.forEach(function (x) {
-    traversals.y.forEach(function (y) {
+	for (var ix=0;ix<4;ix++) {
+		for (var iy=0;iy<4;iy++) {
+			var x = traversals.x[ix];
+			var y = traversals.y[iy];
+
       cell = self.indexes[x][y];
       tile = self.cellContent(cell);
 
@@ -591,8 +519,8 @@ Grid.prototype.move = function (direction) {
           moved = true; // The tile moved from its original cell!
         }
       }
-    });
-  });
+    }
+  }
 
   //console.log('returning, playerturn is', self.playerTurn);
   //if (!moved) {
@@ -627,7 +555,6 @@ Grid.prototype.buildTraversals = function (vector) {
 
 Grid.prototype.findFarthestPosition = function (cell, vector) {
   var previous;
-
   // Progress towards the vector direction until an obstacle is found
   do {
     previous = cell;
@@ -727,7 +654,7 @@ Grid.prototype.islands = function() {
       if (this.cells[x][y] &&
           !this.cells[x][y].marked) {
         islands++;
-        mark(x, y , this.cells[x][y].value);
+        mark({ x:x, y:y }, this.cells[x][y].value);
       }
     }
   }
@@ -746,14 +673,14 @@ Grid.prototype.smoothness = function() {
   for (var x=0; x<4; x++) {
     for (var y=0; y<4; y++) {
       if ( this.cellOccupied( this.indexes[x][y] )) {
-        var value = Math.log(this.cellContent( this.indexes[x][y] ).value) / Math.log(8);
+        var value = Math.log(this.cellContent( this.indexes[x][y] ).value) / Math.log(2);
         for (var direction=1; direction<=2; direction++) {
           var vector = this.getVector(direction);
           var targetCell = this.findFarthestPosition(this.indexes[x][y], vector).next;
 
           if (this.cellOccupied(targetCell)) {
             var target = this.cellContent(targetCell);
-            var targetValue = Math.log(target.value) / Math.log(8);
+            var targetValue = Math.log(target.value) / Math.log(2);
             smoothness -= Math.abs(value - targetValue);
           }
         }
@@ -794,7 +721,7 @@ Grid.prototype.monotonicity = function() {
     markList.push(cell);
     var value;
     if (self.cellOccupied(cell)) {
-      value = Math.log(self.cellContent(cell).value) / Math.log(8);
+      value = Math.log(self.cellContent(cell).value) / Math.log(2);
     } else {
       value = 0;
     }
@@ -803,7 +730,7 @@ Grid.prototype.monotonicity = function() {
       var target = { x: cell.x + vector.x, y: cell.y+vector.y }
       if (self.withinBounds(target) && !marked[target.x][target.y]) {
         if ( self.cellOccupied(target) ) {
-          targetValue = Math.log(self.cellContent(target).value ) / Math.log(8);
+          targetValue = Math.log(self.cellContent(target).value ) / Math.log(2);
           if ( targetValue > value ) {
             //console.log(cell, value, target, targetValue);
             increases += targetValue - value;
@@ -848,10 +775,10 @@ Grid.prototype.monotonicity2 = function() {
       }
       if (next>=4) { next--; }
       var currentValue = this.cellOccupied({x:x, y:current}) ?
-        Math.log(this.cellContent( this.indexes[x][current] ).value) / Math.log(8) :
+        Math.log(this.cellContent( this.indexes[x][current] ).value) / Math.log(2) :
         0;
       var nextValue = this.cellOccupied({x:x, y:next}) ?
-        Math.log(this.cellContent( this.indexes[x][next] ).value) / Math.log(8) :
+        Math.log(this.cellContent( this.indexes[x][next] ).value) / Math.log(2) :
         0;
       if (currentValue > nextValue) {
         totals[0] += nextValue - currentValue;
@@ -873,10 +800,10 @@ Grid.prototype.monotonicity2 = function() {
       }
       if (next>=4) { next--; }
       var currentValue = this.cellOccupied({x:current, y:y}) ?
-        Math.log(this.cellContent( this.indexes[current][y] ).value) / Math.log(8) :
+        Math.log(this.cellContent( this.indexes[current][y] ).value) / Math.log(2) :
         0;
       var nextValue = this.cellOccupied({x:next, y:y}) ?
-        Math.log(this.cellContent( this.indexes[next][y] ).value) / Math.log(8) :
+        Math.log(this.cellContent( this.indexes[next][y] ).value) / Math.log(2) :
         0;
       if (currentValue > nextValue) {
         totals[2] += nextValue - currentValue;
@@ -904,7 +831,7 @@ Grid.prototype.maxValue = function() {
     }
   }
 
-  return Math.log(max) / Math.log(8);
+  return Math.log(max) / Math.log(2);
 }
 
 // WIP. trying to favor top-heavy distributions (force consolidation of higher value tiles)
@@ -918,7 +845,7 @@ Grid.prototype.valueSum = function() {
   for (var x=0; x<4; x++) {
     for (var y=0; y<4; y++) {
       if (this.cellOccupied(this.indexes[x][y])) {
-        valueCount[Math.log(this.cellContent(this.indexes[x][y]).value) / Math.log(8)]++;
+        valueCount[Math.log(this.cellContent(this.indexes[x][y]).value) / Math.log(2)]++;
       }
     }
   }
@@ -979,7 +906,7 @@ Grid.prototype.isWin = function() {
 
 
 
-minSearchTime=82;
+
 while(1){
 
   try{
@@ -993,9 +920,28 @@ while(1){
       newGrid=new Grid(4)
       for(let i=0;i<grids.length;i++){
         let newTile= new Tile(grids[i][0],grids[i][1])
+        log(newTile)
         newGrid.insertTile(newTile)
       }
       // log(newGrid.toString())
+
+
+animationDelay = 150;
+minSearchTime = 10;
+debug=false
+minSearchTime=100;
+//---------------网页版AI控制区-----------------------------
+
+log("到达网页ＡＩ计算方向区域开头")
+log(newGrid)
+var best = getBestMove(newGrid, minSearchTime, debug);
+// Move up: Extra score - 1086.32 Avg number of moves 105.1
+log("到达网页ＡＩ计算方向区域末尾")
+log(best)
+exit()
+//-------------------------------------------
+
+
       newAI=new AI(newGrid)
       bestDirectionNum=newAI.getBest().move
       bestDirection=newAI.translate(bestDirectionNum)
