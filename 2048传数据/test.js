@@ -1,2 +1,3 @@
-let topLeftCorner="00,01,10"
-log("topLeftCorner=",topLeftCorner)
+nums=`123`
+
+log(nums)
