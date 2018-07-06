@@ -5,6 +5,10 @@ if(!requestScreenCapture()){
     toast("请求截图失败");
     exit();
 }
+
+
+// (^| )log\(
+  // log(
 firstGridLeftTopCorner={x:77,y:647}
 //挨着第一个格子
 rightGrid={x:330,y:647}
@@ -52,14 +56,12 @@ AI.prototype.eval = function() {
 
   // 单调性(Monotonicity) 2-4-8-16-32
   // 平滑性(Smoothness) 2-2-2-2-2-2-2-2
-  var smoothWeight = 0.2,
+  var smoothWeight = 0.1,
       mono2Weight  = 2,
       emptyWeight  = 2.7,
       maxWeight    = 1.0;
 
       // var smoothWeight = 0.1,
-      // //monoWeight   = 0.0,
-      // //islandWeight = 0.0,
       // mono2Weight  = 1.0,
       // emptyWeight  = 2.7,
       // maxWeight    = 1.0;
@@ -67,15 +69,18 @@ AI.prototype.eval = function() {
   //自己添加的权重参数
   var oppositeSidesWeight=0.1;
   var coherentWeight=0.1
-  var middleMenAmountWeight=6
+  var middleMenAmountWeight=2
+  var secondMaxWeight    = 2.0;
+  var thirdMaxWeight    = 2.0;
+
 
   //倍倍果实
-  let k=1.0;
+  let k=2;
   var weight64Weight=64*k/1024,
-      weight128Weight=128*k/1024,
-      weight256Weight=256*k/1024,
-      weight512Weight=512*k/1024,
-      weight1024Weight=1024*k/1024;
+      weight128Weight=128*k/1024*10,
+      weight256Weight=256*k/1024*10,
+      weight512Weight=512*k/1024*10,
+      weight1024Weight=1024*k/1024*10;
 
 
 
@@ -88,70 +93,86 @@ AI.prototype.eval = function() {
        //- this.grid.islands() * islandWeight
        + this.grid.monotonicity2() * mono2Weight
        + Math.log(emptyCells) * emptyWeight
-       + this.grid.maxValue() * maxWeight;
+       + this.grid.maxValue() * maxWeight
+       + this.grid.secondMaxValue() * secondMaxWeight
+       + this.grid.thirdMaxValue() * thirdMaxWeight
+
+ //log("result元始天尊=",result)
 
 
   // "异侧减分"
   if(this.grid.isSecondAndThirdOppositeSideOfTheLargeNumber()){
-    if(result>=0){
-      result=result-result*oppositeSidesWeight
-    }else{
-      result=result+result*oppositeSidesWeight
-    }
+    resultIsSecondAndThirdOppositeSideOfTheLargeNumber=0
   }else{
     //"同侧加分"
     if(result>=0){
-      result=result+result*oppositeSidesWeight
+      resultIsSecondAndThirdOppositeSideOfTheLargeNumber=result*oppositeSidesWeight
     }else{
-      result=result-result*oppositeSidesWeight
+      resultIsSecondAndThirdOppositeSideOfTheLargeNumber=-result*oppositeSidesWeight
     }
   }
 
   // "前三名在同一列或者同一行加分"
   if(this.grid.coherent()){
     if(result>=0){
-      result=result+result*coherentWeight
+      resultCoherent=result*coherentWeight
     }else{
-      result=result-result*coherentWeight
+      resultCoherent=-result*coherentWeight
     }
   }else{
-    //"前三名不在同一行或者同一列减分"
-    if(result>=0){
-      result=result-result*coherentWeight
-    }else{
-      result=result+result*coherentWeight
-    }
+    resultCoherent=0
   }
 
   var k2=this.grid.middleMenAmount()
   var middleMenAmountPercentage=1-k2/16
-  result=result*middleMenAmountPercentage*middleMenAmountWeight
+  resultMiddleMenAmount=result*middleMenAmountPercentage*middleMenAmountWeight
+  if(result>=0){
+    resultMiddleMenAmount=result*coherentWeight
+  }else{
+    resultMiddleMenAmount=-result*coherentWeight
+  }
 
 
 
 
   if(this.grid.numSameAndRowSame(64)){
-    result=result+result*weight64Weight
+    resultNumSameAndRowSame64=result*weight64Weight
+  }else{
+    resultNumSameAndRowSame64=0
   }
   if(this.grid.numSameAndRowSame(128)){
-    result=result+result*weight128Weight
+    resultNumSameAndRowSame128=result*weight128Weight
+  }else{
+    resultNumSameAndRowSame128=0
   }
   if(this.grid.numSameAndRowSame(256)){
-    result=result+result*weight256Weight
+    resultNumSameAndRowSame256=result*weight256Weight
+  }else{
+    resultNumSameAndRowSame256=0
   }
   if(this.grid.numSameAndRowSame(512)){
-    result=result+result*weight512Weight
+    resultNumSameAndRowSame512=result*weight512Weight
+  }else{
+    resultNumSameAndRowSame512=0
   }
   if(this.grid.numSameAndRowSame(1024)){
-    result=result+result*weight1024Weight
+    resultNumSameAndRowSame1024=result*weight1024Weight
+  }else{
+    resultNumSameAndRowSame1024=0
   }
 
 
 
-
-
-
-
+  result=result+resultIsSecondAndThirdOppositeSideOfTheLargeNumber+
+                resultCoherent+
+                resultMiddleMenAmount+
+                resultNumSameAndRowSame64+
+                resultNumSameAndRowSame128+
+                resultNumSameAndRowSame256+
+                resultNumSameAndRowSame512+
+                resultNumSameAndRowSame1024
+ //log("168行result=",result)
+  // exit()
   return result
 };
 
@@ -264,6 +285,7 @@ AI.prototype.iterativeDeep = function() {
   var depth = 0;
   var best;
   do {
+   //log("do while best=",best)
     var newBest = this.search(depth, -10000, 10000, 0 ,0);
     if (newBest.move == -1) {
       break;
@@ -272,6 +294,7 @@ AI.prototype.iterativeDeep = function() {
     }
     depth++;
   } while ( (new Date()).getTime() - start < minSearchTime);
+ //log("best=",best)
   return best
 }
 
@@ -1126,6 +1149,21 @@ Grid.prototype.maxValue = function() {
   return Math.log(max) / Math.log(8);
 }
 
+Grid.prototype.secondMaxValue = function() {
+  var max = this.geneSort()[1].num
+ //log("secondMaxValue=",max)
+  return Math.log(max) / Math.log(8);
+}
+Grid.prototype.thirdMaxValue = function() {
+  var gene=this.geneSort()
+  if(gene.length>=3){
+    var max = gene[2].num
+    return Math.log(max) / Math.log(8);
+  }
+  return 0
+}
+
+
 
 Grid.prototype.maxTile = function() {
   var max = 0;
@@ -1248,6 +1286,33 @@ Grid.prototype.coherent = function () {
   }
   return result;
 };
+
+
+function grid1SameGrid2(grid1,grid2){
+  let gene1=grid1.geneSort()
+  let gene2=grid2.geneSort()
+ //log("gene1=",gene1)
+ //log("gene2=",gene2)
+  if(gene1.length==gene2.length){
+    for(let i=0;i<1;i++){
+      if(gene1[i].num==gene2[i].num){
+
+      }else{
+
+       //log("两个格子不一样哦")
+        return false
+      }
+    }
+   //log("两个格子一样样儿的")
+    return true
+  }else{
+   //log("两个格子不一样哦")
+    return false
+  }
+
+
+
+}
 // Grid.prototype.coherent = function () {
 //   var gene = [];
 //   this.eachCell(function (x, y, tile) {
@@ -1321,17 +1386,31 @@ Grid.prototype.coherent = function () {
 
 
 
+function Grid(size) {
+  this.size = size;
+  this.startTiles   = 2;
+
+  this.cells = [];
+
+  this.build();
+  this.playerTurn = true;
+}
 
 
-
-foolTime=27000
-
-minSearchTime=55;
-previousCellsLength=14
-ascu = android.os.SystemClock.uptimeMillis;
-//20秒无脑下滑
 while(1){
+
   try{
+    foolTime=16000
+    // foolTime=0
+
+    minSearchTime=33;
+    previousCellsLength=0
+    previousNewGrid=new Grid(4)
+    previousNewGrid2=new Grid(4)
+    ascu = android.os.SystemClock.uptimeMillis;
+    //20秒无脑下滑
+
+
 
 
     startTime=ascu();
@@ -1359,8 +1438,13 @@ while(1){
 
         endTime=ascu();
         spendTime=endTime-startTime
-
-        if(spendTime<foolTime && cellsLength!=previousCellsLength){
+       //log("AI或者脑残")
+       //log("spendTime<foolTime=",spendTime<foolTime,"grid1SameGrid2(previousNewGrid,newGrid)=",grid1SameGrid2(previousNewGrid,newGrid),"newGrid=",newGrid,"previousNewGrid=",previousNewGrid)
+        ////log("spendTime<foolTime=",spendTime<foolTime,"cellsLength!=previousCellsLength=",cellsLength!=previousCellsLength,"cellsLength=",cellsLength,"previousCellsLength=",previousCellsLength)
+       //log("spendTime<foolTime=",spendTime<foolTime,"grid1SameGrid2(previousNewGrid,newGrid)=",!grid1SameGrid2(previousNewGrid,newGrid))
+        if(spendTime<foolTime && !grid1SameGrid2(previousNewGrid,newGrid)){
+        // if(spendTime<foolTime && cellsLength!=previousCellsLength){
+         //log("脑残")
         // if(cellsLength>=5  && cellsLength!=previousCellsLength){
           // 空格子大于等于7,那么就按照下下左的方式来滑动
           // 滑动的方向取决于最大数的位置
@@ -1368,71 +1452,89 @@ while(1){
           ////log("maxTile=",maxTile)
           // maxTile= { x: 0, y: 1, value: 8, previousPosition: null, mergedFrom: null }
           var maxTileTwoDimensionalCoordinates=twoDimensionalCoordinates(maxTile)
-          var topLeftCorner="00,01,10";
+          var topLeftCorner="00,01,10,11";
           ////log("定义之后就打印的topLeftCorner=",topLeftCorner)
-          var topRightCorner="30,31,20";
-          var bottomLeftCorner="03,02,13";
-          var bottomRightCorner="33,32,23";
+          var topRightCorner="30,31,20,21";
+          var bottomLeftCorner="03,02,13,12";
+          var bottomRightCorner="33,32,23,22";
           ////log("使用前打印的topLeftCorner=",topLeftCorner);
+         //log("要判断如何滑动了,最大值的坐标是",maxTileTwoDimensionalCoordinates)
           if(topLeftCorner.indexOf(maxTileTwoDimensionalCoordinates) != -1){
+           //log("up","up","left")
             多次滑动(["up","up","left"])
             previousDirection="topLeftCorner"
-            //log("up","up","left")
           }else if(topRightCorner.indexOf(maxTileTwoDimensionalCoordinates) != -1){
+           //log("up","up","right")
             多次滑动(["up","up","right"])
             previousDirection="topRightCorner"
-            //log("up","up","right")
           }else if(bottomLeftCorner.indexOf(maxTileTwoDimensionalCoordinates) != -1){
+           //log("down","down","left")
             多次滑动(["down","down","left"])
             previousDirection="bottomLeftCorner"
-            //log("down","down","left")
           }else if(bottomRightCorner.indexOf(maxTileTwoDimensionalCoordinates) != -1){
+           //log("down","down","right")
             多次滑动(["down","down","right"])
             previousDirection="bottomRightCorner"
-           //log("down","down","right")
           }else{
-          //  //log("滑块不在四个角,有内鬼,调用AI")
+          //  log("滑块不在四个角,有内鬼,调用AI")
           //   newAI=new AI(newGrid)
           //   bestDirectionNum=newAI.getBest().move
           //   bestDirection=newAI.translate(bestDirectionNum)
           //   ////log("bestDirection=",bestDirection)
           //   滑动(bestDirection)
           //   // exit()
-           //log("滑块不在四个角,有内鬼,回头")
-           switch(previousDirection)
-           {
-            case 'topLeftCorner':
-              右滑()
-              多次滑动(["up","up","left"])
-              break;
-            case 'topRightCorner':
-              左滑()
-              多次滑动(["up","up","right"])
-              break;
-            case 'bottomLeftCorner':
-              右滑()
-              多次滑动(["down","down","left"])
-              break;
-            case 'bottomRightCorner':
-              左滑()
-              多次滑动(["down","down","right"])
-               break;
-             default:
-            //log('不存在这个滑动方向maxNum,',direction)
-           }
+           log("滑块不在四个角,有内鬼,脚本结束")
+            exit()
           }
-          previousCellsLength=cellsLength
+          previousNewGrid=newGrid
           ////log("多次滑动已经执行")
           // exit()
-        }else{
+        }
+        else if(spendTime<foolTime && grid1SameGrid2(previousNewGrid2,newGrid)){
+          switch(previousDirection)
+          {
+          case 'topLeftCorner':
+            右滑()
+            多次滑动(["up","up","left"])
+            break;
+          case 'topRightCorner':
+            左滑()
+            多次滑动(["up","up","right"])
+            break;
+          case 'bottomLeftCorner':
+            右滑()
+            多次滑动(["down","down","left"])
+            break;
+          case 'bottomRightCorner':
+            左滑()
+            多次滑动(["down","down","right"])
+              break;
+          default:
+            log('previousDirection异常',previousDirection)
+            exit()
+          }
+          previousNewGrid2=newGrid
+
+        }
+
+
+
+
+        else{
+         //log("AI")
+
           // 空格子太少了,启动ＡＩ
+          ////log("\n",newGrid.toString())
           newAI=new AI(newGrid)
+         //log("\n",newAI.grid.toString())
+          bestDirectionNum=newAI.getBest()
+         //log("bestDirectionNum=",bestDirectionNum)
           bestDirectionNum=newAI.getBest().move
           bestDirection=newAI.translate(bestDirectionNum)
           ////log("bestDirection=",bestDirection)
           滑动(bestDirection)
         }
-        sleep(30)
+        sleep(3)
         // exit()
 
 
@@ -1468,16 +1570,21 @@ while(1){
           //  02 12 22 32
           //  03 13 23 33
 
-  }
+    }
 
 
-  }
-  catch(e){
-   //log(e + '\n' + e.stack)
-    exit()
-  }
 
+
+  }catch(e){
+    log(e,e.stack)
+  }
 }
+
+
+
+
+
+
 
 
 
@@ -1747,12 +1854,12 @@ function unlockingScreen(){
 //-----------------滑动动作------------------------------------------
 
 function 多次滑动(directions,t){
-  var t=t || 55  ;
+  var t=t || 30  ;
   for(let i=0;i<directions.length;i++){
     滑动(directions[i])
     sleep(t)
   }
-  sleep(10)
+ //log("多次滑动结束")
 }
 
 
