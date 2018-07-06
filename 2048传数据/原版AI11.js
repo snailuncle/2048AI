@@ -1162,7 +1162,28 @@ Grid.prototype.thirdMaxValue = function() {
   }
   return 0
 }
+Grid.prototype.secondMax = function() {
+  var max = this.geneSort()[1]
+ //log("secondMaxValue=",max)
+  return max
+}
+Grid.prototype.thirdMax = function() {
+  var gene=this.geneSort()
+  if(gene.length>=3){
+    var max = gene[2]
+    return max
+  }
+  return 0
+}
 
+Grid.prototype.foundation = function() {
+  var gene=this.geneSort()
+  if(gene.length>=3){
+    var max = gene[2].num
+    return Math.log(max) / Math.log(8);
+  }
+  return 0
+}
 
 
 Grid.prototype.maxTile = function() {
