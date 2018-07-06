@@ -1,7 +1,12 @@
-ascu = android.os.SystemClock.uptimeMillis;
-
-for(let i=0;i<6;i++){
-  log(ascu())
-  sleep(1000)
-}
-
+16
+32
+64
+128
+256
+512
+1024
+2048
+4096
+8192
+16384
+32768
