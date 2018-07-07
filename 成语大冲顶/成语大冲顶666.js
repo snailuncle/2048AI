@@ -20,7 +20,11 @@ idiomOriginalLength=idiomOriginal.length-2
 
 // removeStr2
 
-for(let i=0;i<6;i++){
+
+
+
+
+for(let i=0;i<8;i++){
   collectWordsResult=collectWords()
   //采集到的随机汉字
   randomChineseCharacter=collectWordsResult[0]
@@ -58,20 +62,29 @@ for(let i=0;i<6;i++){
 
   if(idiomOutPut && idiomOutPut.length==4){
     let clicked=false
+    let sss=""
     for(let i=0;i<clickedIdiom.length;i++){
-      if(idiomOutPut==clickedIdiom[i]){
+      if(clickedIdiom[i].indexOf(idiomOutPut) != -1){
         // 1234
         // 3412
-        clickIdiom3412(idiomOutPut)
+        // aaa3421=false
+        // aaa4132=false
+        if(clickedword.indexOf(idiomOutPut+"3412")==-1){
+          sss=clickIdiom3412(idiomOutPut)+"3421"
+
+        }else if(clickedword.indexOf(idiomOutPut+"4132")==-1){
+          sss=clickIdiom4132(idiomOutPut)+"4132"
+
+        }
         clicked=true
         break;
       }
     }
     if(clicked==false){
-      clickIdiom(idiomOutPut)
+      sss=clickIdiom(idiomOutPut)
     }
     sleep(200)
-    clickedIdiom.push(idiomOutPut)
+    clickedIdiom.push(sss)
   }else{
     clickedword.push(chineseCharacter)
   }
@@ -86,13 +99,13 @@ function checkBeforeClick(){
     // let names
     // names+=name+": "+randomChineseCharacterObjects[name]+", ";
     // log(names)
-    log(x,y)
+    // log(x,y)
     let x=randomChineseCharacterObjects[name].x+40
     let y=randomChineseCharacterObjects[name].y
-    log(x,y)
+    // log(x,y)
     var color = images.pixel(img, x, y);
     if(colors.isSimilar(color, "#562308")){
-      log(x,y,"这里的颜色是黑色")
+      // log(x,y,"这里的颜色是黑色")
       press(x,y,50)
       sleep(200)
     }
@@ -101,6 +114,8 @@ function checkBeforeClick(){
 
 // 点击成语
 function clickIdiom(idiom){
+  log(idiom,"点击顺序1234")
+
   checkBeforeClick()
  //log"clickIdiom接收的参数idiom=",idiom)
   let word1=idiom.slice(0,1)
@@ -118,6 +133,8 @@ function clickIdiom(idiom){
 }
 // 点击成语
 function clickIdiom3412(idiom){
+  log(idiom,"点击顺序3412")
+
   checkBeforeClick()
  //log"clickIdiom接收的参数idiom=",idiom)
   let word1=idiom.slice(0,1)
@@ -131,7 +148,25 @@ function clickIdiom3412(idiom){
     press(x,y,50)
     sleep(200)
   }
-  return word3+word4+word1+word2
+  return idiom
+
+}
+function clickIdiom4132(idiom){
+  log(idiom,"点击顺序4132")
+  checkBeforeClick()
+ //log"clickIdiom接收的参数idiom=",idiom)
+  let word1=idiom.slice(0,1)
+  let word2=idiom.slice(1,2)
+  let word3=idiom.slice(2,3)
+  let word4=idiom.slice(3,4)
+  let words=[word4,word1,word3,word2]
+  for(let i=0;i<4;i++){
+    let x=randomChineseCharacterObjects[words[i]].x
+    let y=randomChineseCharacterObjects[words[i]].y
+    press(x,y,50)
+    sleep(200)
+  }
+  return idiom
 
 }
 
@@ -180,7 +215,7 @@ function outputIdiom(word){
  //log"outputIdiom接收的参数word=",word)
   //遍历所有包含*左*的成语
   containWordResult=containWord(word)
- log("containWordResult=",containWordResult)
+//  log("containWordResult=",containWordResult)
   // exit()
   //遍历所有包含*左*的成语,的其余三个字符,是否在randomChineseCharacter中
 
@@ -188,7 +223,7 @@ function outputIdiom(word){
 
   let s=""
   let cursor=0
-  log("157行containWordResultLength=",containWordResultLength)
+  // log("157行containWordResultLength=",containWordResultLength)
   while(cursor<containWordResultLength){
     let remainThreeWords=removeWord(containWordResult.slice(cursor,cursor+4),word)
     let count=0
