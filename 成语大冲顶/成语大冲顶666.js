@@ -12,7 +12,14 @@ console.show()
 clickedIdiom=[]
 clickedword=[]
 
+// 词库中没有的成语="如日方升"
 
+
+// 词库中没有的成语="一言一行"
+
+
+// 词库中没有的成语="一无所闻"
+词库中没有的成语="载舟覆舟正经"
 
 idiomFilePath="/sdcard/成语大全无换行符.txt"
 idiomOriginal=files.read(idiomFilePath)
@@ -24,7 +31,7 @@ idiomOriginalLength=idiomOriginal.length-2
 
 
 
-for(let i=0;i<8;i++){
+for(let i=0;i<18;i++){
   collectWordsResult=collectWords()
   //采集到的随机汉字
   randomChineseCharacter=collectWordsResult[0]
@@ -44,9 +51,19 @@ for(let i=0;i<8;i++){
     for(let j=0;j<clickedword.length;j++){
       if(chineseCharacter==clickedword[j]){
         sequenceNumber++;
-        break;
+
       }
     }
+
+    if(词库中没有的成语.indexOf(chineseCharacter)!=-1){
+      sequenceNumber++;
+
+    }
+
+
+
+
+
     chineseCharacter=randomChineseCharacter.charAt(randomChineseCharacter.length - sequenceNumber)
 
   }
